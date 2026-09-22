@@ -10,6 +10,7 @@ agent-brain\
 ├── README.md          本文件
 ├── machines.md        机器名登记(COMPUTERNAME → 代号)
 ├── inbox.md           随手想法、还没成项目的灵感
+├── skills\            session-handoff skill 分发副本(B 机初始化用)
 └── <项目名>\          每个项目一个文件夹
     ├── CONTEXT.md     项目说明书:是什么、阶段、关键文档、约定
     ├── DECISIONS.md   决策日志:定了什么、为什么、否决过啥
@@ -37,10 +38,13 @@ agent-brain\
 
 ## B 机初始化清单
 
-1. `git clone <本仓库地址> G:\ai\agent-brain` —— **路径必须与 A 机一致**
+1. `git clone <本仓库地址> G:\ai\agent-brain` —— **路径必须与 A 机一致**(B 机没有 G 盘时,先让 A 机 agent 修改契约路径:SKILL.md 与 AGENTS.md 里的 `G:\ai\agent-brain` 全部替换,再重新分发)
 2. 把下方「全局约定」代码块内容追加进 B 机的 `%USERPROFILE%\.dsh\AGENTS.md`(没有该文件就新建)
-3. 从 A 机把 `C:\Users\Administrator\.agents\skills\session-handoff\` 整个文件夹拷到 B 机同路径
+3. 把本仓库自带的 `skills\session-handoff\` 整个文件夹复制到 B 机 `%USERPROFILE%\.agents\skills\session-handoff\`(本仓库内是**分发副本**;A 机 `.agents\skills\` 里是**运行正本**,skill 更新时正本改完同步覆盖副本)
 4. 首次收尾时 agent 会询问本机代号并登记进 `machines.md`
+
+> 懒人路径:第 2、3 步可以不手动做——B 机装好 DSH 后新开会话,直接对 agent 说
+> 「读 `G:\ai\agent-brain\README.md`,按 B 机初始化清单把跨机接力配置好」,它会自己完成。
 
 ## 全局约定(复制进各机的 %USERPROFILE%\.dsh\AGENTS.md)
 
