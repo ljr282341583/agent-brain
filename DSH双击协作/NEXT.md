@@ -1,20 +1,23 @@
 # NEXT — DSH双击协作(DevHandoff)
 
 > 断点唯一真相源。收尾必更新;过时事项挪进当篇 JOURNAL,不堆积也不删历史。
-> 最近更新:2026-09-22 A机
+> 最近更新:2026-09-22 B机
 
 ## 进行中
 
-- 跨机接力基础设施已就绪(大脑仓库已上 GitHub,skill/约定已去盘符化);
-  待:重启 A 机会话验证 `session-handoff` skill 出现,并试跑首次"收尾"
+- 跨机接力基础设施已就绪(大脑仓库已上 GitHub,skill/约定已去盘符化)
+- B 机初始化已全部完成(clone + skill 正本 + 全局 AGENTS.md + `.agent-brain` 定位文件),代号已登记为 B机
+- A 机:重启会话验证 `session-handoff` 出现 + 试跑首次"收尾"——这一步仍未做
 
 ## 下一步(按顺序)
 
 1. A 机:重启会话,说"收尾"试跑,验证全链路(写日志 / 推大脑仓库)
-2. B 机:clone 大脑仓库到本机任意路径(建议 `%USERPROFILE%\agent-brain`),DSH 新会话说「按 `<clone路径>\README.md` 的新机器初始化清单配置」,重启后按 README 验证三连
-3. 用户:真要开工 DevHandoff 代码时,建 GitHub 私有仓库(名字待定)并推送本地首提交(b3de14d);B 机届时再 clone 项目代码仓库
-4. 开发:按 PRD §15 顺序启动 DevHandoff MVP(细则见 `PRD-DevHandoff.md` §15)
+2. 用户:真要开工 DevHandoff 代码时,建 GitHub 私有仓库(名字待定)并推送本地首提交(b3de14d);两台机器届时再 clone 项目代码仓库
+3. 开发:按 PRD §15 顺序启动 DevHandoff MVP(细则见 `PRD-DevHandoff.md` §15)
 
 ## 已知坑
 
-- 暂无
+- **项目文件夹名不一致(2026-09-22 B机发现,决定暂不改名)**:本机 DSH 项目文件夹 / 工作目录是
+  `DSH双机协作`(机),大脑仓库里的项目文件夹是 `DSH双击协作`(击)。`session-handoff` 按"当前工作目录名"
+  认路,直接收尾会**新建** `DSH双机协作\`,笔记会分家。**收尾前先确认统一文件夹名再执行**;
+  理由与备选见 `DECISIONS.md`(2026-09-22 条目)。
