@@ -2,25 +2,25 @@
 
 ## 进行中
 
-- 发版流程走了一半：0.3.5 升号、分发文档如实化、release notes 草稿已提交（`f174b90`）；
-  [5] 三重保险加固随本次收尾提交。**余下 = 打 tag → GitHub Release → 真机自更新验证。**
+- **v0.3.5 已正式发布**：tag `v0.3.5` → CI（run 35774840909，7m58s 全绿）→ 正式 Release
+  四资产（连字符名）齐备；说明已用纠偏后的 release notes 重写（修掉 BOM 与错误的
+  npm 声称）。**余下唯一一步 = 真机自更新验证。**
 
 ## 下一步
 
-1. 收尾汇报后打 tag `v0.3.5` → `git push origin v0.3.5` → GitHub Releases 新建**正式** Release
-   （非 Draft，Draft 用户收不到推送）→ 上传 4 文件：`DS Harness Desktop Setup 0.3.5.exe`、
-   同名 `.blockmap`、`DS Harness Desktop-0.3.5-portable.exe`、`latest.yml`。
-   **文件名一个字都不能改**（latest.yml 记录的是原文件名，改名即 404）；Release 描述直接贴
-   `docs/release-notes-v0.3.5.md`。
-2. 真机复验自更新（历史「更新完打不开」事故现场）：本机已装版托盘「检查桌面端更新」→
-   发现 0.3.5 → 下载安装重启 → 确认正常打开。
-3. 应用内 dsh 更新链路三选一拍板（不变：a npm 入侧车 +10~15MB / b registry tarball +
-   Windows 自带 tar.exe 解压（推荐）/ c 砍掉改走外壳更新）；分发说明两处「暂不可用」
-   文案随拍板定稿。
-4. 低价值清账（可选，不变）：AGENTS.md Project Commands 过时（“无自动化测试”已不成立）、
-   补 `app/README.md`（代码注释引用它）、`过程记录/` 补 v0.3.1–v0.3.4 四篇。
-5. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前只断言文件移除+真安装体完好）。
-6. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
+1. 真机复验自更新（历史「更新完打不开」事故现场）：本机已装 0.3.4 托盘「检查桌面端更新」→
+   发现 0.3.5 → 下载安装重启 → 确认正常打开。注意：本机装的是**本地构建**的 0.3.4
+   （侧车无 npm）；升到 CI 出的 0.3.5 后侧车含 npm。
+2. ~~应用内 dsh 更新链路三选一拍板~~ **已作废（2026-09-23 纠偏）**：CI 发布物侧车一直含 npm
+   （`scripts/prepare-runtime.ps1` 官方脚本拷入），应用内「检查 dsh 更新」可用；此前
+   “不可用”结论取自本地从未跑过脚本的 runtime，属误判。遗留小项（可拍板）：本地打包前
+   先跑 `app\scripts\prepare-runtime.ps1`——要不要挂进 `npm run build` 自动化、并在
+   [2] 静态检查加「侧车含 npm」断言防回归。
+3. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
+   同样与现实不符**（源在外部 `.agent-loop/project.md`，须在源头改）、补 `app/README.md`
+   （代码注释引用它）、`过程记录/` 补 v0.3.1–v0.3.4 四篇。
+4. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体完好）。
+5. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
 
 ## 已知坑
 
@@ -32,6 +32,10 @@
 - NSIS `/D=` 含空格路径会被按空格截断：须把整个 `/D=...` 作为**一个带引号参数**传入
   （Node spawnSync 参数数组天然如此；PowerShell Start-Process 单字符串易翻车，WMI Create
   传完整带引号命令行最稳）。
+- **侧车 npm 双态**：CI 发布物永远含 npm（prepare-runtime.ps1）；本地初始 runtime 没有
+  （.gitignore 不入库）——本地包的「检查 dsh 更新」会报错，跑一次
+  `app\scripts\prepare-runtime.ps1` 即补齐（2026-09-23 A机 已跑，npm 11.13.0）。
+  AGENTS 硬约束 3 的「无 npm」说法只对没跑脚本的本地树成立。
 - Node 24 禁止裸 spawn `.cmd`（EINVAL、status=null 无输出）：用 `node + npm-cli.js` 或 `cmd /c`；
   afterPack 已按此修复，新代码别再踩。
 - desktop 模式死结：agent 跑在 desktop 的 dsh 服务里——关壳 = agent 断电，壳开着 = [5] 跳过；
@@ -40,7 +44,6 @@
 - 会话工作区属主 `BUILTIN/Administrators`，直接跑 git 报 `dubious ownership`：临时加
   `git -c safe.directory=<路径>`；根治须改全局 git 配置（用户未授权，勿擅动）。
 - `过程记录/` 最新只到 2026-09-10（v0.3.1–v0.3.4 未补，细节看 `git log --oneline`）。
-- 测试一律 `DSH_HOME` 重定向（verify:smoke 已内置）；`app/runtime/` 无 npm，
-  “调用侧车自带 npm”不成立。
+- 测试一律 `DSH_HOME` 重定向（verify:smoke 已内置）。
 
 最近更新：2026-09-23 A机
