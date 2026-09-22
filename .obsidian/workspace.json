@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "项目/protocol-generator/CONTEXT.md",
+                "file": "项目/protocol-generator/NEXT.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "CONTEXT"
+              "title": "NEXT"
             }
           }
         ]
@@ -99,7 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "项目/protocol-generator/CONTEXT.md",
+                "file": "项目/protocol-generator/NEXT.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "项目/protocol-generator/CONTEXT.md",
+                "file": "项目/protocol-generator/NEXT.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "项目/protocol-generator/CONTEXT.md",
+                "file": "项目/protocol-generator/NEXT.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -190,6 +190,8 @@
   },
   "active": "314c76d5ee0daa48",
   "lastOpenFiles": [
-    "项目/protocol-generator/JOURNAL/2026-09-22-A机.md"
+    "项目/protocol-generator/DECISIONS.md",
+    "项目/protocol-generator/JOURNAL/2026-09-22-A机.md",
+    "项目/protocol-generator/CONTEXT.md"
   ]
 }
