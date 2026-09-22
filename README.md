@@ -24,6 +24,11 @@ agent-brain\
 1. **三方同名**:DSH 项目文件夹名 = 代码仓库名 = 本仓库里的项目文件夹名(skill 靠目录名认路)。
 2. **自定位**:大脑仓库 clone 路径各机自定;clone 后把路径写进本机 `%USERPROFILE%\.agent-brain`(一行,无引号)。除此之外,没有任何写死的盘符。
 
+## 新手教程
+
+- [教程1-日常开发流程.md](教程1-日常开发流程.md) —— 配置好的机器怎么日常用:A 机开新项目 → B 机接手,小白向
+- [教程2-新电脑从零配置.md](教程2-新电脑从零配置.md) —— 一台全新电脑加入这套系统(主力机方向),从装软件开始
+
 ## 两台机器的日常
 
 **开局(接手开发)**
@@ -42,10 +47,10 @@ agent-brain\
 在本仓库新建以项目名命名的文件夹,补上四件套即可;`session-handoff` skill
 按当前工作目录名自动对应文件夹,不需要改 skill。
 
-## B 机初始化清单
+## 新机器初始化清单(B 机 / 第三台机第一次看这里)
 
 1. clone 本仓库到**本机任意路径**(建议短而稳:`%USERPROFILE%\agent-brain` 或某盘 `\ai\agent-brain`)
-2. 懒人路径:DSH 新会话对 agent 说「读 `<clone路径>\README.md`,按 B 机初始化清单把跨机接力配置好」→ 它自动完成三件事:
+2. 懒人路径:DSH 新会话对 agent 说「读 `<clone路径>\README.md`,按『新机器初始化清单』把跨机接力配置好」→ 它自动完成三件事:
    - 把本仓库 `skills\session-handoff\` 复制到 `%USERPROFILE%\.agents\skills\session-handoff\`
    - 把下方「全局约定」写入 `%USERPROFILE%\.dsh\AGENTS.md`
    - 把本机 clone 路径写入 `%USERPROFILE%\.agent-brain`
