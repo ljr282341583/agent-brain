@@ -63,11 +63,11 @@ agent-brain\
 
 ```markdown
 ## 跨机接力约定
-- 所有项目的开发思路/决策/断点集中记录在「大脑仓库」(agent-brain,私有 git 仓库)。
+- 所有项目的开发思路/决策/断点集中记录在「大脑仓库」(agent-brain,私有 git 仓库),统一放在其 `项目\` 子目录下。
 - 大脑仓库本机位置记录在 `%USERPROFILE%\.agent-brain`(一行路径);该文件不存在时,
   依次探测 G:\ai\agent-brain、D:\ai\agent-brain、E:\ai\agent-brain、
   %USERPROFILE%\agent-brain,命中即用,全未命中则询问用户,确定后回写该文件。
-- 开局:接到开发任务,若 <大脑根>\<项目名>\ 存在,先读其中 CONTEXT.md、DECISIONS.md、
+- 开局:接到开发任务,若 <大脑根>\项目\<项目名>\ 存在,先读其中 CONTEXT.md、DECISIONS.md、
   NEXT.md 再动手,不要重复已否决的方案。
 - 收尾:结束开发时用 session-handoff skill 蒸馏进度并推送「项目仓库 + 大脑仓库」。
 ```
