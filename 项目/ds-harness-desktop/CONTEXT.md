@@ -11,8 +11,10 @@ Electron 外壳包裹官方 DeepSeek Harness（`@deepseek-ai/dsh`），由捆绑
 ## 当前阶段（2026-09-22）
 
 - 代码停在 `main` `88091a6`，与 `origin/main` 一致、工作区干净；该笔已确认由 A机 提交并推送。
-- A机 有两份克隆：会话工作区那份（路径深、有 ownership 报错）+ 新克隆
-  `G:\ai\ds-harness-desktop`（干净、长期开发副本，推荐用这份）。
+- **唯一工作副本**：原项目文件夹 `G:\ai\deepseek harness output\workspace\projects\ds-harness-desktop`
+  （`main` `88091a6` = 远端最新、工作区干净，`git pull` 已确认 up to date）。
+  2026-09-22 一度另建的 `G:\ai\ds-harness-desktop` 属冗余克隆，核实无改动后已删除
+  （结论以 DECISIONS 同日「纠正」条目为准）。
 - 无自动化测试与 lint；验证 = `npm start` 人工冒烟 + 打包守卫输出。
 
 ## 关键文档

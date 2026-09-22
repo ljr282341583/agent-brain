@@ -8,7 +8,10 @@
 
 1. B机 开工：先 `git pull`（或 clone），对 agent 说“先读大脑仓库里 ds-harness-desktop
    的笔记再继续”。
-2. A机 继续开发用 `G:\ai\ds-harness-desktop`（新克隆，git 直接可用）。
+2. A机 继续开发就在原项目文件夹
+   `G:\ai\deepseek harness output\workspace\projects\ds-harness-desktop`；
+   如想根治 `dubious ownership`，征得用户同意后执行
+   `git config --global --add safe.directory <路径>`（目前未改全局配置）。
 3. 下一轮开发内容未拍板（v0.3.4 之后的新需求 / 更新器后续），开工前先向用户确认方向。
 
 ## 已知坑
