@@ -1,7 +1,8 @@
-# agent-brain — 跨机开发思路仓库
+# agent-brain — 跨机开发思路仓库(大脑仓库)
 
-> 私有仓库。存放所有项目的开发思路蒸馏笔记,靠 git 在 A/B 两机之间同步。
-> 你用 Obsidian 打开本目录就是阅读器;agent 直接读写 markdown,零集成。
+> 私有仓库。存放所有项目的开发思路蒸馏笔记,靠 git 在多台机器之间同步。
+> **每台机器 clone 到本机任意路径即可**;你用 Obsidian 打开本目录就是阅读器,
+> agent 直接读写 markdown,零集成。本机的 clone 路径记录在 `%USERPROFILE%\.agent-brain`。
 
 ## 目录结构
 
@@ -10,7 +11,7 @@ agent-brain\
 ├── README.md          本文件
 ├── machines.md        机器名登记(COMPUTERNAME → 代号)
 ├── inbox.md           随手想法、还没成项目的灵感
-├── skills\            session-handoff skill 分发副本(B 机初始化用)
+├── skills\            session-handoff skill 分发副本(各机初始化用)
 └── <项目名>\          每个项目一个文件夹
     ├── CONTEXT.md     项目说明书:是什么、阶段、关键文档、约定
     ├── DECISIONS.md   决策日志:定了什么、为什么、否决过啥
@@ -18,18 +19,23 @@ agent-brain\
     └── JOURNAL\       流水账:每次收尾一篇,文件名 日期-机器.md
 ```
 
+## 机器间仅存的两条约定
+
+1. **三方同名**:DSH 项目文件夹名 = 代码仓库名 = 本仓库里的项目文件夹名(skill 靠目录名认路)。
+2. **自定位**:大脑仓库 clone 路径各机自定;clone 后把路径写进本机 `%USERPROFILE%\.agent-brain`(一行,无引号)。除此之外,没有任何写死的盘符。
+
 ## 两台机器的日常
 
 **开局(接手开发)**
 
-1. `git pull`(项目代码仓库 + 本仓库)
-2. 对 agent 说:"先读 agent-brain 里本项目的笔记再继续"
+1. `git pull`(项目代码仓库 + 大脑仓库)
+2. 对 agent 说:"先读大脑仓库里本项目的笔记再继续"
 3. agent 读 CONTEXT / DECISIONS / NEXT,接上思路干活
 
 **收尾(结束开发)**
 
 1. 对 agent 说:"收尾"(装了 `session-handoff` skill 则全自动)
-2. agent:写 JOURNAL → 更新 NEXT → 有决策追加 DECISIONS → 提交并推送本仓库 + 项目代码仓库(日志自动带 commit 短哈希)
+2. agent:定位大脑仓库 → 写 JOURNAL → 更新 NEXT → 有决策追加 DECISIONS → 提交并推送本仓库 + 项目代码仓库(日志自动带 commit 短哈希)
 
 ## 新项目接入(零配置)
 
@@ -38,23 +44,31 @@ agent-brain\
 
 ## B 机初始化清单
 
-1. `git clone <本仓库地址> G:\ai\agent-brain` —— **路径必须与 A 机一致**(B 机没有 G 盘时,先让 A 机 agent 修改契约路径:SKILL.md 与 AGENTS.md 里的 `G:\ai\agent-brain` 全部替换,再重新分发)
-2. 把下方「全局约定」代码块内容追加进 B 机的 `%USERPROFILE%\.dsh\AGENTS.md`(没有该文件就新建)
-3. 把本仓库自带的 `skills\session-handoff\` 整个文件夹复制到 B 机 `%USERPROFILE%\.agents\skills\session-handoff\`(本仓库内是**分发副本**;A 机 `.agents\skills\` 里是**运行正本**,skill 更新时正本改完同步覆盖副本)
+1. clone 本仓库到**本机任意路径**(建议短而稳:`%USERPROFILE%\agent-brain` 或某盘 `\ai\agent-brain`)
+2. 懒人路径:DSH 新会话对 agent 说「读 `<clone路径>\README.md`,按 B 机初始化清单把跨机接力配置好」→ 它自动完成三件事:
+   - 把本仓库 `skills\session-handoff\` 复制到 `%USERPROFILE%\.agents\skills\session-handoff\`
+   - 把下方「全局约定」写入 `%USERPROFILE%\.dsh\AGENTS.md`
+   - 把本机 clone 路径写入 `%USERPROFILE%\.agent-brain`
+3. 重启会话,验证:问 agent 任一已有项目的断点(如"DSH双击协作 现在做到哪了"),能答出 = 通了
 4. 首次收尾时 agent 会询问本机代号并登记进 `machines.md`
-
-> 懒人路径:第 2、3 步可以不手动做——B 机装好 DSH 后新开会话,直接对 agent 说
-> 「读 `G:\ai\agent-brain\README.md`,按 B 机初始化清单把跨机接力配置好」,它会自己完成。
 
 ## 全局约定(复制进各机的 %USERPROFILE%\.dsh\AGENTS.md)
 
 ```markdown
 ## 跨机接力约定
-- 所有项目的开发思路/决策/断点集中记录在 `G:\ai\agent-brain\`(私有 git 仓库)。
-- 开局:接到开发任务,若 `G:\ai\agent-brain\<项目名>\` 存在,先读其中
-  CONTEXT.md、DECISIONS.md、NEXT.md 再动手,不要重复已否决的方案。
-- 收尾:结束开发时用 `session-handoff` skill 蒸馏进度并推送两个仓库。
+- 所有项目的开发思路/决策/断点集中记录在「大脑仓库」(agent-brain,私有 git 仓库)。
+- 大脑仓库本机位置记录在 `%USERPROFILE%\.agent-brain`(一行路径);该文件不存在时,
+  依次探测 G:\ai\agent-brain、D:\ai\agent-brain、E:\ai\agent-brain、
+  %USERPROFILE%\agent-brain,命中即用,全未命中则询问用户,确定后回写该文件。
+- 开局:接到开发任务,若 <大脑根>\<项目名>\ 存在,先读其中 CONTEXT.md、DECISIONS.md、
+  NEXT.md 再动手,不要重复已否决的方案。
+- 收尾:结束开发时用 session-handoff skill 蒸馏进度并推送「项目仓库 + 大脑仓库」。
 ```
+
+## skill 正本与副本
+
+- **运行正本**:各机 `%USERPROFILE%\.agents\skills\session-handoff\`(DSH 从这里加载)
+- **分发副本**:本仓库 `skills\session-handoff\`;更新 skill 时先改正本,再覆盖副本随仓库分发
 
 ## 红线
 

@@ -22,3 +22,9 @@
 
 - **决定**:用 Git Commit Hash 作为代码状态与 AI 开发上下文的唯一关联点;当前 commit 与上下文 commit 不一致时必须显式警告(PRD §5.4、§14)。
 - **理由**:分支会漂移,commit 不可变;这是 PRD 结论节标注的最关键设计决策。
+
+## 2026-09-22 大脑仓库路径契约改为"各机自定位",skill 去盘符化
+
+- **决定**:废弃"两机同路径 `G:\ai\agent-brain`"硬契约。`session-handoff` skill 第 0 步自动定位大脑仓库:优先读本机 `%USERPROFILE%\.agent-brain`(一行路径的 marker 文件),否则探测常见候选路径(`G:\ai\agent-brain`、`D:\ai\agent-brain`、`E:\ai\agent-brain`、`%USERPROFILE%\agent-brain`),全未命中则询问用户并回写 marker。SKILL.md / AGENTS.md / README 全部去盘符化。
+- **理由**:A/B 两机工作空间盘符可能不同;路径写死让 skill 与约定文件带"机器特异性",换机或加第三台机器都要改文件重新分发。自定位后同一份 skill 在任何机器零修改通用。
+- **代价**(接受):每台新机器首次使用多一次路径确认(探测命中则无感);机器间唯一保留的命名约定是"项目文件夹名三方同名"。

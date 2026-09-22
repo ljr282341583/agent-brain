@@ -5,14 +5,15 @@
 
 ## 进行中
 
-- 无(方案刚定型,开发未启动)
+- 跨机接力基础设施已就绪(大脑仓库已上 GitHub,skill/约定已去盘符化);
+  待:重启 A 机会话验证 `session-handoff` skill 出现,并试跑首次"收尾"
 
 ## 下一步(按顺序)
 
-1. 用户:GitHub 建 `agent-brain` 私有仓库;本仓库已本地 init + 首提交,补 `git remote add origin <url>` 后 `git push -u origin main`
-2. 用户:GitHub 给本项目建私有仓库;本地已 init + 首提交,同样补 remote 后 push
-3. 用户:B 机 clone 两个仓库到相同路径,按 brain README 的「B 机初始化清单」复制全局 AGENTS.md 约定与 session-handoff skill
-4. 开发:按 PRD §15 顺序启动 DevHandoff MVP(项目初始化 → 数据库和认证 → 项目和对话 → 摘要和交接 → Git Adapter → 上下文和搜索 → 前端页面 → CLI → 测试和文档)
+1. A 机:重启会话,说"收尾"试跑,验证全链路(写日志 / 推大脑仓库)
+2. B 机:clone 大脑仓库到本机任意路径(建议 `%USERPROFILE%\agent-brain`),DSH 新会话说「按 `<clone路径>\README.md` 的 B 机初始化清单配置」,重启后按 README 验证三连
+3. 用户:真要开工 DevHandoff 代码时,建 GitHub 私有仓库(名字待定)并推送本地首提交(b3de14d);B 机届时再 clone 项目代码仓库
+4. 开发:按 PRD §15 顺序启动 DevHandoff MVP(细则见 `PRD-DevHandoff.md` §15)
 
 ## 已知坑
 
