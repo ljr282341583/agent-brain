@@ -2,23 +2,23 @@
 
 ## 进行中
 
-- **0.3.5 发版流水线全部收官**：tag → CI 自动发布（十步全绿）→ 真机自更新验证 PASS →
-  按用户要求把安装从 `C:\Program Files` 搬回 `G:\ai\dsh desktop\…`（记忆键已回填 G:\，
-  今后更新原地不动）。反馈三件套 + 分发说明实测修正随本次收尾提交，**待下一版带出**。
+- 无
 
 ## 下一步
 
-1. 发 0.3.6（时机自定）带出反馈三件套：升号 0.3.6（package.json+lockfile）→ 说“收尾”
-   （自动打包+体检全绿）→ 打 tag `v0.3.6`（**注释 = Release 说明，用 `-F` 文件喂，
-   正文别在命令文本里出现行首 `## `**）→ 推 tag 即由 release.yml 自动发布 → 托盘验证。
+1. 打 tag `v0.3.6` 发版：升号+门禁改造已随 B机 2026-09-23 收尾提交推送。Release 说明写
+   UTF8（无 BOM）文件，用 `git tag -F <notes> v0.3.6` 喂（**正文别在命令文本里出现行首
+   `## `**）→ push tag 由 release.yml 自动发布 → 托盘/更新验证。
    0.3.5 已占用：本地 `产出\` 若构建出 0.3.5 是「同号不同源」，勿与 GitHub 发布资产混淆。
-2. （可拍板小项）本地打包自动跑 `app\scripts\prepare-runtime.ps1`（侧车 npm 对齐 CI）+
-   [2] 静态检查加「侧车含 npm」断言防回归。
-3. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
+2. 补跑完整 [5] 安装 E2E（0.3.6 收尾时因 4 个运行实例 SKIP）：退出全部正式实例后在终端
+   `cd app && npm run verify:smoke`；[5] 装临时目录并暂存/导回卸载键，真安装安全。
+3. 升级本机装机 0.3.4 → 0.3.6（发版后用新 Setup exe；更新向导保持全机模式）。
+4. 重启桌面端做会话档案修复终验：应干净启动（回滚点见已知坑 quarantine 条）。
+5. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
    与现实不符**（源在外部 `.agent-loop/project.md`，须在源头改）、补 `app/README.md`
    （代码注释引用它）、`过程记录/` 补 v0.3.1–v0.3.4 四篇。
-4. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体完好）。
-5. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
+6. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体完好）。
+7. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
 
 ## 已知坑
 
@@ -43,8 +43,9 @@
 - NSIS `/D=` 含空格路径：整个 `/D=...` 必须作为**一个带引号参数**传入（WMI Create 裸
   命令行实证可行；PowerShell Start-Process 单字符串会按空格截断）。
 - **侧车 npm 双态**：CI 发布物永远含 npm（`prepare-runtime.ps1`）；本地初始 runtime 没有
-  （.gitignore 不入库）——本地打包前跑一次 `app\scripts\prepare-runtime.ps1`
-  （2026-09-23 A机 已跑，npm 11.13.0）。AGENTS 硬约束 3 的「无 npm」只对没跑脚本的本地树成立。
+  （.gitignore 不入库）——自 0.3.6 起 `npm run build`/`build:dir` 已前置自动跑该脚本
+  （幂等快路径，就绪秒过）+ smoke [2] 断言「侧车含可执行 npm」，不再依赖人工记得跑。
+  AGENTS 硬约束 3 的「无 npm」只对没跑脚本的本地树成立。
 - Node 24 禁止裸 spawn `.cmd`（EINVAL、status=null 无输出）：用 `node + npm-cli.js` 或
   `cmd /c`（afterPack 已按此修复）。
 - desktop 模式死结：关壳 = agent 断电、壳开 = [5] 跳过；例外：全局 `dsh web` 占 3080 时
@@ -56,5 +57,19 @@
   「发射即返回」；`Invoke-CimMethod` 参数名是 `-Arguments`（非 `-ArgumentList`）。
 - `过程记录/` 最新只到 2026-09-10（v0.3.1–v0.3.4 未补，细节看 `git log --oneline`）。
 - 测试一律 `DSH_HOME` 重定向（verify:smoke 已内置）。
+- **B机 dev 树 node_modules 腐坏 = 三连假故障（2026-09-23 实锤，B机）**：`app\node_modules`
+  长期不重装会与 lockfile 漂移（当时 dsh 0.1.1-rc.2 vs 声明 0.1.5-rc.1），表征三连：
+  smoke [3] 120s 等不到 token URL、[4] 打包 exe 秒退 0、real-home 启动崩（推断旧版不认
+  `.v3.jsonl.zstd` 后缀去校验陈旧 v2）。修法：`set ELECTRON_MIRROR=…npmmirror… && npm ci`
+  再 `npm run build`；三症齐发先查 `node_modules\@deepseek-ai\dsh` 版本 vs lockfile。
+- **改写 `app\scripts\prepare-runtime.ps1` 必须保留 UTF-8 BOM**：无 BOM 的 UTF-8 被
+  PS5.1 按 GBK 解析，报 `Unexpected token '}'` 或 `渚ц溅` 乱码（2026-09-23 踩过，已回写
+  BOM；重写该文件后用 `powershell -NoProfile -File` 跑一遍 exit 0 验证）。
+- **`~/.dsh\quarantine-legacy-v2`（陈旧 v2 会话隔离区，2026-09-23 B机）**：存 2 个户口
+  失配的 v2 文件（b319e52f 协议生成修改、cde953a9 剪视频老 D: 路径），0.1.5 下无害
+  （启动只选最高代 v3）。**两种「搬回」都会把无害变必崩**：整会话目录迁去老户口目录 →
+  v3 错位启动必崩；只迁 v2 去老户口目录 → 同 id 跨项目目录 duplicate 必崩。按原相对
+  路径搬回其原位（= 回滚到修复前）才安全，但没有必要。复验用
+  `过程记录\2026-09-23-会话档案身份审计.js`（系统 node 跑，全绿 = 0 错位 0 冲突）。
 
-最近更新：2026-09-23 A机
+最近更新：2026-09-23 B机

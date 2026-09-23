@@ -68,3 +68,27 @@
   触发点（向导模式页被切）不再具备——终验卸载键/双快捷方式/记忆键三处全指 G:\。
 - **否决**：切「仅当前用户」装回 HKCU（留孤儿副本与双卸载入口）；留在 Program Files
   （违背用户要求）。
+
+## 2026-09-23 0.3.6 打包门禁升级：build 自动前置 prepare-runtime + 侧车 npm 断言
+
+- **决定**：`npm run build`/`build:dir` 前置自动执行 `app\scripts\prepare-runtime.ps1`
+  （脚本加幂等快路径：runtime 与 npm 就绪且 `node --version` 吻合时直接 exit 0，已就绪
+  时秒过不重下）；verify:smoke [2] 静态检查新增「侧车含可执行 npm」断言（npm-cli.js
+  存在 + 侧车真跑 `--version` 出 `x.y.z`）。版本升 0.3.6。
+- **理由**：本地打包忘跑 prepare-runtime 会拿缺 npm 的 runtime 出货，与 CI 产物不一致；
+  该条本是 NEXT 可拍板小项，B机 09-23 升号时一并落地；双 README 同步说明防误踩。
+- **否决**：维持「人工打包前记得手动跑脚本」的口头约定（依赖记性，NEXT 原条目已拍掉）。
+
+## 2026-09-23 损坏会话处置：隔离陈旧 v2，不回迁
+
+- **决定**：把 2 个户口失配的陈旧 v2 会话文件（b319e52f、cde953a9 的
+  `session.jsonl.zstd`）移出 sessions 树至
+  `C:\Users\Administrator\.dsh\quarantine-legacy-v2\`（保留原相对路径结构），v3 当代
+  文件原地不动；复刻 `assertStoredIdentity` 路径推导做离线审计复验 82/82 全绿。
+- **理由**：项目文件夹改名 + 09-19 目录批量搬迁只留下 v2 旧代 header 的老户口，v3
+  户口与位置本就一致；0.1.5 启动 `listArtifacts` 只选最高代校验，v2 永不被读——隔离后
+  存储树对任意版本读取器都自洽，历史一字未改、可按原路径找回。
+- **否决**：① 整会话目录搬回老户口目录（活的 v3 变错位 → 启动 listArtifacts 必崩）；
+  ② 只把 v2 搬回老户口目录（同 id 出现在两个项目目录 → duplicate id 必崩）；
+  ③ 改写 v2 header 户口（动文件内容，风险大于收益）。最初拍板的「挪回原位」被 ①② 的
+  源码链路与离线审计证伪后改道为隔离。

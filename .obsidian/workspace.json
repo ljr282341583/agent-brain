@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "项目/protocol-generator/NEXT.md",
+                "file": "项目/ds-harness-desktop/CONTEXT.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "NEXT"
+              "title": "CONTEXT"
             }
           }
         ]
@@ -190,8 +190,12 @@
   },
   "active": "314c76d5ee0daa48",
   "lastOpenFiles": [
+    "项目/ds-harness-desktop/JOURNAL/2026-09-23-B机.md",
+    "项目/ds-harness-desktop/DECISIONS.md",
+    "项目/ds-harness-desktop/CONTEXT.md",
+    "项目/protocol-generator/CONTEXT.md",
+    "项目/protocol-generator/NEXT.md",
     "项目/protocol-generator/DECISIONS.md",
-    "项目/protocol-generator/JOURNAL/2026-09-22-A机.md",
-    "项目/protocol-generator/CONTEXT.md"
+    "项目/protocol-generator/JOURNAL/2026-09-22-A机.md"
   ]
 }
