@@ -6,19 +6,13 @@
 
 ## 下一步
 
-1. v0.3.6 已打标推送（2026-09-23 B机，tag → `9c72f2c`，notes 源
-   `docs/release-notes-v0.3.6.md`，先 `docs: v0.3.6 release notes` 提交再打标）：待确认
-   release.yml 跑完、Releases 出现 4 个连字符资产、托盘「检查桌面端更新」拉到 0.3.6。
-   0.3.5 已占用：本地 `产出\` 若构建出 0.3.5 是「同号不同源」，勿与 GitHub 发布资产混淆。
-2. 补跑完整 [5] 安装 E2E（0.3.6 收尾时因 4 个运行实例 SKIP）：退出全部正式实例后在终端
-   `cd app && npm run verify:smoke`；[5] 装临时目录并暂存/导回卸载键，真安装安全。
-3. 升级本机装机 0.3.4 → 0.3.6（发版后用新 Setup exe；更新向导保持全机模式）。
-4. 重启桌面端做会话档案修复终验：应干净启动（回滚点见已知坑 quarantine 条）。
-5. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
+1. 补跑完整 [5] 安装 E2E（0.3.6 收尾与档位二复跑均因 4 个运行实例 SKIP）：退出全部正式
+   实例后在终端 `cd app && npm run verify:smoke`；[5] 装临时目录并暂存/导回卸载键，真安装安全。
+2. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
    与现实不符**（源在外部 `.agent-loop/project.md`，须在源头改）、补 `app/README.md`
    （代码注释引用它）、`过程记录/` 补 v0.3.1–v0.3.4 四篇。
-6. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体完好）。
-7. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
+3. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体完好）。
+4. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
 
 ## 已知坑
 
