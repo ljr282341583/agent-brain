@@ -6,9 +6,9 @@
 
 ## 下一步
 
-1. 打 tag `v0.3.6` 发版：升号+门禁改造已随 B机 2026-09-23 收尾提交推送。Release 说明写
-   UTF8（无 BOM）文件，用 `git tag -F <notes> v0.3.6` 喂（**正文别在命令文本里出现行首
-   `## `**）→ push tag 由 release.yml 自动发布 → 托盘/更新验证。
+1. v0.3.6 已打标推送（2026-09-23 B机，tag → `9c72f2c`，notes 源
+   `docs/release-notes-v0.3.6.md`，先 `docs: v0.3.6 release notes` 提交再打标）：待确认
+   release.yml 跑完、Releases 出现 4 个连字符资产、托盘「检查桌面端更新」拉到 0.3.6。
    0.3.5 已占用：本地 `产出\` 若构建出 0.3.5 是「同号不同源」，勿与 GitHub 发布资产混淆。
 2. 补跑完整 [5] 安装 E2E（0.3.6 收尾时因 4 个运行实例 SKIP）：退出全部正式实例后在终端
    `cd app && npm run verify:smoke`；[5] 装临时目录并暂存/导回卸载键，真安装安全。
@@ -31,8 +31,10 @@
   验证口诀：查 `G:\…\resources\app\package.json` 版本号（或让 agent「查更新位置」）。
 - **发版说明三坑（0.3.5 修了三轮）**：① `Set-Content -Encoding utf8`（PS5.1）带 BOM——
   用 `[IO.File]::WriteAllText(…, [Text.UTF8Encoding]::new($false))`；② `Get-Content` 不带
-  `-Encoding UTF8` 会按 GBK 解 UTF-8 全乱码；③ 命令文本里**行首 `## ` 会被吃掉**（tag
-  注释标题就这么丢的）——正文一律从文件读（`-Encoding UTF8`）再组装。
+  `-Encoding UTF8` 会按 GBK 解 UTF-8 全乱码；③ **一切 `#` 开头的行都会从 tag 注释里消失**——2026-09-23 v0.3.6
+  实测：连 `git tag -F <文件>` 也照剥（`#` 标题与 `## ` 节标题全部丢失、只剩正文；
+  0.3.5 记的「从文件读」并不防这一刀，剥行发生在 git 内部）。**notes 的标题/节标题
+  别用 `#` 走 tag，改用 `**粗体**` 或纯文本**；`-Encoding UTF8` 只解决编码不解决剥行。
 - **发版即推 tag**：`.github/workflows/release.yml` 监听 `v*` tag 自动打包发布
   （`--publish always`、资产连字符名、说明取 tag 注释、`releaseType: release` 正式非 Draft）；
   上传的 4 资产名连字符，本地产物名空格——同一文件双名，**文档与 notes 一律写连字符名**。
