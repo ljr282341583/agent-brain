@@ -6,13 +6,11 @@
 
 ## 下一步
 
-1. 补跑完整 [5] 安装 E2E（0.3.6 收尾与档位二复跑均因 4 个运行实例 SKIP）：退出全部正式
-   实例后在终端 `cd app && npm run verify:smoke`；[5] 装临时目录并暂存/导回卸载键，真安装安全。
-2. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
+1. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
    与现实不符**（源在外部 `.agent-loop/project.md`，须在源头改）、补 `app/README.md`
    （代码注释引用它）、`过程记录/` 补 v0.3.1–v0.3.4 四篇。
-3. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体完好）。
-4. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
+2. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体完好）。
+3. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
 
 ## 已知坑
 
