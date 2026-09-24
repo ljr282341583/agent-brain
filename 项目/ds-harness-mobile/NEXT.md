@@ -1,113 +1,64 @@
 # NEXT — ds-harness-mobile 当前断点
 
-> 只保留"现在接着干"需要的信息。本页写于 2026-09-24，机器 = **B机**（`WIN-20251127LIT`）。
+> 只保留"现在接着干"需要的信息。上一轮的完整流水在 `JOURNAL\2026-09-25-B机.md`。
+> 最近更新：**2026-09-25 B机**（`WIN-20251127LIT`）
 
 ## 进行中
 
-- 无。2026-09-24 本机只做了"拉齐 + 通读 + 验证能构建"，**没有改过任何项目代码**。
-
-## 已验证：这个项目可以彻底不依赖那个第三方插件（2026-09-24 本机实测）
-
-「手机用不了」有两层原因，**都与 App 无关**：
-1. 桌面版把 3080 **只绑在 127.0.0.1**（实测监听地址就是回环）——手机根本够不着这个端口；
-   插件之所以能连，是因为它另外开了隧道。
-2. 那个插件**根本没装**（`~/.dsh/profiles/web` 里连痕迹都没有），所以没有二维码。
-
-读官方 harness 源码（`@deepseek-ai/dsh-client-connection`）后发现：**插件引以为卖点的"配对"，官方本来就有**——
-
-- `dsh web` 启动即打印**带令牌**的地址：`http://127.0.0.1:<port>/?token=<随机令牌> (LAN: …)`；
-  `printUrl` 默认就是 true（`dsh-web-app/lib/index.js`）。
-- 访问该地址 → **303** 跳到干净的 `/`，并种下 `dsh-auth-<authority 哈希>` cookie
-  （HttpOnly / SameSite=Strict / 与 authority 绑定 / **有效期 30 天**，`cookieMaxAgeDays` 默认 30）。
-  此后 `/api` 凭这个 cookie 放行；没配对就返回 **401** `dsh web authentication required`。
-- `/api` 信任围栏只认三种 Host：回环、**bind 成 `0.0.0.0` 时自动纳入的所有网卡 IPv4**、
-  或 `--trusted-host` 声明的 authority；并且 `Origin` 的 host 必须等于 `Host` 的 host。
-- `--host 0.0.0.0` 被 **CLI 故意拒绝**（原话：would expose remote code execution to the network），
-  但**配置层 schema 是允许的**，而 `--patch <file>` 是官方顶层选项 → 有官方后门可走，只是属于绕过安全闸。
-
-**因此推荐架构：零插件、零第三方二进制、零自签证书**
-= 回环 harness 原样不动 **+ 自己写约 70 行 Node 反代**（把 `Host`/`Origin` 改写成回环）
-**+ 官方令牌地址做成二维码**（App 现成的扫码能力正好用上）。
-
-本机已把这条链**端到端跑通**：无 cookie→401、带令牌→303+种 cookie、带 cookie→200、真 index.html 正常返回；
-而且**反例对照成立**：直接带外部 Origin 打 harness = **403**，经反代改写后 = 通过。
-Node 24 在 PATH 上，且 RPC 走纯 HTTP（无 WebSocket/SSE 依赖）→ 反代用标准库就够。
-
-**App 侧（v3）只需改三处**：内置 `mobile-adapt.css` 默认开启（没插件就没有适配层了）、
-允许明文 HTTP（Tailscale 内传输本来就被 WireGuard 加密）、把 401/未配对变成人话提示。
-
-**尚未拍板的两点**：① 反代监听地址——只绑 Tailscale 接口（更安全，推荐）还是绑局域网；
-② 二维码怎么生成——内置一份极简编码器（仓库自带，永不腐烂）还是一次性装个 npm 二维码包。
-
-## 当前状态（2026-09-24 实测）
-
-- **远端是最新源，本地已拉齐**：本地原停在 `8a0d0a7`（0.1.1），**落后远端 4 个提交**；
-  已 `git fetch` + `git pull --ff-only` 到 `main` `870c666`，工作区干净、本地无分叉。
-- 落后的 4 个提交就是 **v2 的全部来源**：
-  `cb1e2f7` 0.2.1 内置扫码配对、源码独立到 `v2/` → `e8b4309` release 签名做存在性判断 +
-  换机说明 → `216a2d2` 写明二维码来自第三方插件 → `870c666` A机 2026-09-14 的 `auto:` 提交
-  （只扩了根 `.gitignore`，与 v2 无关）。
-  ⚠️ 也就是说：**2026-09-14 之后本项目没有任何代码改动**，但 A机 的 v2 工作当时没有同步到 B机。
-- **0.2.1 目前只是源码，没有任何成品包**：
-  - GitHub Releases 只有 `v0.1.0` / `v0.1.1`（各挂一个 `DS-Harness-Mobile.apk`）；
-    仓库里也没有任何 `.apk`（被 `.gitignore` 挡掉）。
-  - 本机原有的两个 APK 实测（aapt2）都是 **0.1.1 / versionCode 2**，是 2026-08-18 的产物。
-  - → 想在手机上跑 0.2.1，**必须自己构建**。
-- **本机首次构建 v2 通过**（新增了 `v2/local.properties`，见下）：
-  - `assembleDebug` → `v2\app\build\outputs\apk\debug\app-debug.apk`，1,794,148 B。
-  - `assembleRelease` → `app-release-unsigned.apk`，1,411,557 B（**未签名**，因为是新目录还没有 keystore）；
-    与 `v2/README.md` 声称的"约 1.4 MB"吻合。release 构建的 `lintVitalRelease` 也过了。
-  - 本机新增的唯一非源码文件：`v2/local.properties`（一行 `sdk.dir=...`，已被 `v2/.gitignore` 忽略，
-    `git status` 仍然干净）。
-- **本机环境**：DSH `0.1.5-rc.1`（正是 v2 文档假设的版本）；但 `~/.dsh/profiles/web` 里
-  **没有装** `@linxin666/dsh-remote-web-ui` / `dsh-web-all` → **扫码配对主路径在本机无法端到端验证**，
-  要验证得先装插件（或改走 Caddy 门卫那条路）。
-- 无自动化测试、无 CI（仓库里没有 `.github/`）；验证手段 = 构建 + 真机人工冒烟。
+- **0.3.0 已构建交付，但真机没跑过**。产物 `v2/DS-Harness-Mobile-0.3.0.apk`（`versionCode 4`），
+  签名与手机上装的 0.1.1 完全一致 → 可直接覆盖升级。装它、按下条清单冒烟，是下一步第一件事。
+- 架构已从"依赖第三方插件"切换成**零插件**：官方令牌 + 自写中继 + 手机外壳层。
+  代码都已提交，链路在电脑侧端到端验证过（401 → 303+种 cookie → 200）。
 
 ## 下一步
 
-1. **做出能在手机上覆盖安装的 0.2.1 签名包**（当前手上只有未签名产物）：
-   把**仓库根**的 `release.keystore` 拷到 `v2/`（同一把钥匙、同一别名，
-   `v2/app/build.gradle` 已按存在性判断自动用它签名）→ `.\gradlew.bat assembleRelease`
-   → 产物 `app-release.apk` → `adb install -r`。**keystore 不入库，换机必须自带。**
-2. **真机冒烟（这项从没有人做过）**：装 0.2.1 后走一遍
-   ①扫码配对 ②手填地址 ③附件选择 ④返回键。
-   重点看 **0.2.0 把 `launchMode` 从 `singleTask` 改成 `singleTop`** 之后，
-   `startActivityForResult` 的回调是否真的正常（扫码与附件选择都依赖它，改错了不会崩、
-   只会"扫完没反应"，属于静默故障）。
-3. （可选）发 `v0.2.1` tag/Release 并把 APK 挂上去，让手机端不必靠电脑现构建。
-   注意 versionCode `3` > `2`：**降级回 0.1.1 必须先卸载**。
-4. **文档/代码漂移三处（都已核对，属真实现象，不是推断）**：
-   - `MainActivity.java` 的 `UA_SUFFIX` 仍写 `DSHarnessMobile/0.2.0`，而 versionName 已是 0.2.1；
-   - `onNewIntent` 上方注释还写「launchMode=singleTask」，manifest 实际是 `singleTop`；
-   - `v2/README.md` 第六节的结构图写的是作者本机的独立文件夹名 `ds-harness-mobile-v2\`，
-     仓库里的路径其实是 `v2/`。
-5. （低价值清账）**根 `README.md` 里完全没有 v2 的入口**（grep 不到 `v2`/`0.2`/`扫码`/`二维码`），
-   新读者只会看到 0.1.1 那套 Caddy 教程。建议加一段"0.2.1 见 `v2/README.md`"。
-6. 接力：另一台机器 `git pull`（项目仓库 + 大脑仓库）后，对 agent 说
+1. **真机冒烟 0.3.0**（唯一从没做过的验证）。电脑跑 `启动手机访问.cmd` → App「扫码配对」扫二维码，重点看：
+   ① 抽屉开合 ② 悬浮按钮拖动 ③ 左缘右滑唤出 ④ 点遮罩收起 ⑤ 附件选择 ⑥ 返回键。
+   已知风险见"已知坑"里的**浏览器/WebSocket**一条：同一台手机换个浏览器可能结果完全不同。
+2. **移动体验第二批**（用户最在意的就是这块，优先级高于功能扩展）：
+   长按弹菜单（桌面 hover 才出现的操作手机上摸不到）、顶部模型/思考强度选择器改底部大抽屉、
+   代码块与表格横向滚动、**把"暂无会话"改成"连接断了，点这里重试"**。
+3. **文档对齐现状**：`v2/README.md` 主线仍写"必须先装第三方插件"，与零插件架构矛盾；
+   根 `README.md` 仍无 v2/0.3.0 入口。顺带清掉三处已知漂移（`UA_SUFFIX`、`onNewIntent` 注释、
+   `v2/README.md` 第六节结构图里的旧文件夹名）。
+4. （可选）给 0.3.0 打 tag / 发 Release 并把 APK 挂上去，手机端就不必靠电脑现构建。
+5. 接力：另一台机器 `git pull`（项目仓库 + 大脑仓库）后，对 agent 说
    "先读大脑仓库里 ds-harness-mobile 的笔记再继续"。
 
 ## 已知坑
 
-- **自签证书的 SAN 只有 `dsh-mobile`，跟实际连接的 Tailscale 主机名不匹配** → 走 Caddy 门卫时
-  **首次连接必然**弹「证书无法验证」，要人工点「仍然继续并记住」（v2 会按主机记住，之后不再问）。
-  0.1.1 反而看不到这个弹窗，因为它是**无条件放行任何证书错误**（这正是 v2 要修的安全洞）。
-- **`v2/` 缺 `local.properties` 就直接 `BUILD FAILED`**，报错只说
-  "SDK location not found…define ANDROID_HOME or sdk.dir"，不会告诉你"去建个 local.properties"；
-  本机 `ANDROID_HOME` 是**空的**，所以必须靠该文件（根目录那份是 v1 的，v2 不共用）。
-- **缺 `release.keystore` 时构建不报错**，只静默产出 `app-release-unsigned.apk`
-  → 装到手机上会因签名不符失败，**极易被误判成 App 的 bug**（构建日志里只有一行中文提示）。
-- **明文 HTTP 被禁**：`http://<tailscale主机>:3080` 这类 0.1.x 老地址在 0.2.x 一定失败
-  （报 `ERR_CLEARTEXT_NOT_PERMITTED`，App 有专门的提示文案）。要用明文只能装回 0.1.0 的包。
-- **Android 12+ 不会把 `https://<id>.dsh-market.com` 链接交给本 App**（域名不归我们、
-  没过 App Links 验证），所以**必须用 App 内的「扫码配对」，不要用系统相机扫**。
-- **配对令牌是一次性的**：任一设备配对成功即失效；配第二台要回电脑点「刷新二维码」。
-- **电脑侧面板出不来二维码**通常不是 App 的问题：① 没装那个第三方插件（官方 DSH 没这功能）；
-  ② 绑的是回环且没开公网地址（要开「局域网访问」或「自动公网隧道」）；
-  ③ 在局域网地址而不是 `127.0.0.1` 打开的界面里铸令牌（面板仅限本机）。
-- **换机会"丢"签名与证书**：`release.keystore` / `*.pem` / `*.apk` / `local.properties`
-  全被 `.gitignore` 挡着，这是设计如此——不是仓库损坏，照 `v2/README.md` 第七节自带或重生成。
-- **本机没装那个插件**，所以本机跑不出二维码：验证扫码链路前先
-  `dsh plugin --profile web add @linxin666/dsh-remote-web-ui` 并重启 `dsh web`。
-- 工作区路径含空格/括号（`G:\ai\deepseek harness output\workspace\projects\ds-harness-mobile`）
-  → `v2/gradle.properties` 开了 `android.overridePathCheck=true`（构建时会打一行 experimental 警告，正常）。
+- **"暂无会话" ≠ 没有会话**。官方界面在拿不到数据时显示"暂无会话"，同时在底部悄悄写"重新连接中…"，
+  极容易被理解成"我的会话丢了"。**判据**：看"工作区"下面有没有工作区名——一个名字都没有 = 没拿到数据，
+  不是会话没了。客户端源码里这个空状态由 `EmptySessions` 渲染（`dsh-client-ui-workspace`）。
+- **中继必须活着，而且它曾有个致命 bug**（已修）：客户端一断开（刷新/切后台/锁屏）就触发未捕获的
+  `ECONNRESET`，**整个中继进程崩掉**；此后页面外壳还在（已加载过），但所有数据请求失败 → 表现就是
+  "暂无会话"。另一个已修的：未认证的 WebSocket 握手以前**卡死**不回 401（表现为无限转圈）。
+  排查这类问题看 `%TEMP%\dsh-mobile-relay.log`（只记事实：有无 cookie、状态码、字节数，**不记口令与 cookie 内容**）。
+- **这条链对浏览器有依赖**：实测某浏览器上 `/api` 全通（200）却**永远完不成 WebSocket 的
+  generation 握手**（客户端 3s 警告 / 15s 报错 → 退避重连），换个浏览器立刻正常。
+  因为会话列表要等那个握手，所以症状同样是"暂无会话"。**排查手机问题时，先换浏览器排除这一层。**
+- **桌面版跑的 dsh ≠ 它自带的 dsh**：实际用的是自更新下来的
+  `%APPDATA%\ds-harness-desktop\dsh-update\versions\<版本>\`（本次是 `0.1.7-rc.2`），
+  自带的 `resources\app\package.json` 里钉的 `0.1.5-rc.1` 根本没在跑。**读源码/下结论前先看日志里的 bin 路径。**
+- **不要批量杀 node 进程**：会把 harness 自己的后台任务管理器一起带走（本机踩过，报
+  "Windows Job runner exited…"）。只按 PID 精确清理。
+- **`v2/` 缺 `local.properties` 直接 `BUILD FAILED`**，报错只说 "SDK location not found"，
+  不会提示你去建文件；本机 `ANDROID_HOME` 是空的，必须靠它。
+- **缺 `release.keystore` 时构建是"绿"的**，只静默产出未签名包 → 装到手机上因签名不符失败，
+  极易误判成 App 的 bug。keystore 不入库，**换机必须自带**。
+- **资源别写错模块**：仓库根有 v1 的 `app/`，v2 的在 `v2/app/`（本次就把 `mobile-shell.*`
+  误写进 v1，APK 里没打进资源，靠"检查包内文件"才发现）。顺带：v1 工程按约定**一行不动**。
+- **XML 注释里不能出现连续两个连字符**：写分隔线或用 `--host` 这类字面量会让资源编译失败
+  （报 `Failed to parse XML file`，不告诉你原因）。改完 XML 先 `[xml](Get-Content …)` 验一下最省事。
+- **预览/测量要等界面真正就绪**：固定等待会在 "Loading plugins…" 阶段就取数，得到一堆假数据
+  （曾因此误判"主区宽 0"）。`tools/dev/phone-view.mjs` 已带 `VIEW_READY_JS` 轮询。
+- **改窄屏布局时的两个硬约束**（外壳层就是靠它们才成立）：① 开合状态**跟着官方
+  `data-sidebar-collapsed` 走**，开合一律"点官方那个按钮"，不自造状态；② 侧栏一旦
+  `position: fixed`，其余栅格列会**自动前移**，必须把三列显式钉在 `grid-column: 1/2/3`，
+  只改 `grid-template-columns` 会导致主区宽 0。
+- **不要把 bind 改成 `0.0.0.0`**：官方 CLI 明确拒绝（原话是会把远程代码执行暴露到网络上）；
+  配置层虽允许、`--patch` 也能绕，但那属于绕过厂商安全闸，本项目**不采用**。
+- 电脑侧地址是运行时输入且形态不一（尾网域名 / 尾网 IP / 局域网 IP），所以明文放行只能整体开，
+  无法用 `<domain>` 精确枚举——这是 0.3.0 放开明文的实际原因，别再当成疏忽。
+- 工作区路径含空格（`G:\ai\deepseek harness output\workspace\projects\ds-harness-mobile`）
+  → `v2/gradle.properties` 开着 `android.overridePathCheck=true`，构建时会打一行 experimental 警告，正常。
