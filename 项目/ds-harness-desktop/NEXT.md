@@ -6,14 +6,24 @@
 
 ## 下一步
 
-1. **[5] 本机端到端已验证**（隔离命名构建，2026-09-24：通过 8、失败 0、跳过 0）。改安装器/
-   打包相关代码后重跑 = `npm run build:smoketest`（约 4 分钟）→ `npm run verify:smoke`
-   （**无需提权、无需 --force-installer**，本机有真实安装也安全）。未跑 build:smoketest 时
-   本机默认 SKIP（安全默认值），发版门禁由 CI 承担。
-2. 排查本机 Setup 双击崩溃：0xc0000005（NSIS `System.dll` @0x1581，2026-09-24 两次
-   同偏移；静默 `/S` 正常、交互路径必崩）。**复现务必用隔离包**（先 `build:smoketest`，
-   双击 `产出\smoketest\…SmokeTest Setup …exe`）——不要裸双击真实包，那会触发
-   uninstallOldVersion 卸掉真安装。
+1. **[5] 本机端到端已验证过一次**（隔离命名构建，2026-09-24：通过 8、失败 0、跳过 0），但本机
+   安装器随后出现**间歇性 .onInit 相位不稳定**（见下条），因此 [5] 现有"一次重试 + 连续失败按
+   环境问题 SKIP"的策略。改安装器/打包相关代码后重跑 = `npm run build:smoketest`（约 4 分钟）
+   → `npm run verify:smoke`（**无需提权、无需 --force-installer**，本机有真实安装也安全）。
+   未跑 build:smoketest 时本机默认 SKIP（安全默认值），发版门禁由 CI 承担。
+2. **本机安装器 `.onInit` 插件相位间歇性不稳定（合并原「双击崩溃」条目，2026-09-24 实测）**：
+   表现二选一——**秒崩 0xC0000005**（退出码 3221225477，1-2s，无 WER 事件）或**长时间挂起**
+   （手动探测 >600s 未返回，进程挂着），此外也成功过（298s）。**要害证据**：崩溃留下的
+   `%TEMP%\ns*.tmp` 里**只有 `System.dll`(12288B) + `UAC.dll`(14848B)** → 崩在插件加载 /
+   `.onInit` 早期；用户 18:15/18:18 双击真实包的两处崩溃（事件 1000：`System.dll` @0x1581）
+   也各留一个同样的 `ns*.tmp` → **同一相位、同一现象，且与被测产物无关**（全新隔离构建同样
+   复现，同一产物也有成功记录）。已排除：磁盘空间（C: 58.5GB 空闲）、第三方杀软（仅 Defender，
+   行为日志无记录）、产物完整性（136,345,726B 完整）。
+   **下一步排查建议**：① 把隔离包拿到 **A机** 跑同一命令（判断是否本机特有）；② 若仅 B机复现，
+   查 shell/UAC/Defender 与已知文件夹相关配置差异（`multiUser.nsh` 在 `.onInit` 里调
+   `SHGetKnownFolderPath`）；③ 复现时抓 `ns*.tmp` 内容 + 进程转储。
+   **复现务必用隔离包**（`npm run build:smoketest` → 双击 `产出\smoketest\…SmokeTest Setup …exe`），
+   不要裸双击真实包（会触发 uninstallOldVersion 卸掉真安装）。
 3. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
    与现实不符**（源在外部 `.agent-loop/project.md`，须在源头改）、补 `app/README.md`
    （代码注释引用它）、`过程记录/` 补 v0.3.1–v0.3.4 四篇。
