@@ -6,6 +6,39 @@
 
 - 无。2026-09-24 本机只做了"拉齐 + 通读 + 验证能构建"，**没有改过任何项目代码**。
 
+## 已验证：这个项目可以彻底不依赖那个第三方插件（2026-09-24 本机实测）
+
+「手机用不了」有两层原因，**都与 App 无关**：
+1. 桌面版把 3080 **只绑在 127.0.0.1**（实测监听地址就是回环）——手机根本够不着这个端口；
+   插件之所以能连，是因为它另外开了隧道。
+2. 那个插件**根本没装**（`~/.dsh/profiles/web` 里连痕迹都没有），所以没有二维码。
+
+读官方 harness 源码（`@deepseek-ai/dsh-client-connection`）后发现：**插件引以为卖点的"配对"，官方本来就有**——
+
+- `dsh web` 启动即打印**带令牌**的地址：`http://127.0.0.1:<port>/?token=<随机令牌> (LAN: …)`；
+  `printUrl` 默认就是 true（`dsh-web-app/lib/index.js`）。
+- 访问该地址 → **303** 跳到干净的 `/`，并种下 `dsh-auth-<authority 哈希>` cookie
+  （HttpOnly / SameSite=Strict / 与 authority 绑定 / **有效期 30 天**，`cookieMaxAgeDays` 默认 30）。
+  此后 `/api` 凭这个 cookie 放行；没配对就返回 **401** `dsh web authentication required`。
+- `/api` 信任围栏只认三种 Host：回环、**bind 成 `0.0.0.0` 时自动纳入的所有网卡 IPv4**、
+  或 `--trusted-host` 声明的 authority；并且 `Origin` 的 host 必须等于 `Host` 的 host。
+- `--host 0.0.0.0` 被 **CLI 故意拒绝**（原话：would expose remote code execution to the network），
+  但**配置层 schema 是允许的**，而 `--patch <file>` 是官方顶层选项 → 有官方后门可走，只是属于绕过安全闸。
+
+**因此推荐架构：零插件、零第三方二进制、零自签证书**
+= 回环 harness 原样不动 **+ 自己写约 70 行 Node 反代**（把 `Host`/`Origin` 改写成回环）
+**+ 官方令牌地址做成二维码**（App 现成的扫码能力正好用上）。
+
+本机已把这条链**端到端跑通**：无 cookie→401、带令牌→303+种 cookie、带 cookie→200、真 index.html 正常返回；
+而且**反例对照成立**：直接带外部 Origin 打 harness = **403**，经反代改写后 = 通过。
+Node 24 在 PATH 上，且 RPC 走纯 HTTP（无 WebSocket/SSE 依赖）→ 反代用标准库就够。
+
+**App 侧（v3）只需改三处**：内置 `mobile-adapt.css` 默认开启（没插件就没有适配层了）、
+允许明文 HTTP（Tailscale 内传输本来就被 WireGuard 加密）、把 401/未配对变成人话提示。
+
+**尚未拍板的两点**：① 反代监听地址——只绑 Tailscale 接口（更安全，推荐）还是绑局域网；
+② 二维码怎么生成——内置一份极简编码器（仓库自带，永不腐烂）还是一次性装个 npm 二维码包。
+
 ## 当前状态（2026-09-24 实测）
 
 - **远端是最新源，本地已拉齐**：本地原停在 `8a0d0a7`（0.1.1），**落后远端 4 个提交**；
