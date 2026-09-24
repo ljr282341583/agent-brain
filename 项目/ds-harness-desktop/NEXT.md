@@ -6,11 +6,15 @@
 
 ## 下一步
 
-1. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
+1. 排查本机 Setup 双击崩溃：0xc0000005（NSIS `System.dll` @0x1581，2026-09-24 两次
+   同偏移；静默 `/S` 正常、交互路径必崩）。安全复现：**先暂存卸载键再启动**——切勿
+   直接双击未暂存状态下的安装器，会触发 uninstallOldVersion 卸掉真安装。
+2. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
    与现实不符**（源在外部 `.agent-loop/project.md`，须在源头改）、补 `app/README.md`
    （代码注释引用它）、`过程记录/` 补 v0.3.1–v0.3.4 四篇。
-2. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体完好）。
-3. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
+3. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体
+   完好）；快照扩全机位置已随 09-24 修复完成，此项只剩断言本体。
+4. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
 
 ## 已知坑
 
@@ -21,6 +25,20 @@
   **安装记忆键**（`HKLM\Software\99d3b161-…`）→ 第一道保险天然失效。当前记忆键 = G:\
   （全机模式）：**更新时一路默认、别切「仅当前用户」**（会孤儿化现装→双安装）。更新完
   验证口诀：查 `G:\…\resources\app\package.json` 版本号（或让 agent「查更新位置」）。
+- **全机安装的自查位置（2026-09-23 [5] 后误报"快捷方式没了"实锤）**：B机为全机安装——
+  程序 `D:\AI(CODEX)\dsh desktop\DS Harness Desktop`、图标在 `C:\Users\Public\Desktop`
+  与 `C:\ProgramData\Microsoft\Windows\Start Menu\Programs`、卸载键在 **HKLM**（HKCU 无）、
+  记忆键 `HKLM\99d3b161-…` 指 D:\。**按 `USERPROFILE\Desktop`/`APPDATA` 开始菜单/
+  `HKCU` 卸载/`LOCALAPPDATA\Programs`/`C:\Program Files` 自检会全部查空——不是丢了，
+  是这五处只对应每用户安装**；全机安装的图标在桌面上照样显示（公共桌面），开始菜单
+  搜索也能命中。09-24 起 [5] 的卸载键暂存与快捷方式快照已覆盖全机位置（三 hive +
+  公共桌面/ProgramData）。
+- **[5] 曾假绿误删真安装（2026-09-24 实锤，修复 = 85a9d96）**：旧暂存只扫 HKCU、
+  全机安装的键在 HKLM → 暂存扑空 → NSIS uninstallOldVersion 清空 D:\ 安装与公共
+  图标；同时三道断言全空转（`realDirs=[]` 循环不执行、快照只盖用户级位置、「已还原」
+  无条件打印）→ **8/0/0 是假绿**。跑完体检必须核对两行真断言真的打印过：
+  「已暂存 N 个（真实安装 …）」与「真实安装体完好（…）」；修复含 fail-closed——
+  未提权时测试报红，**红 = 安全，绿不绿要看断言行在不在**。
 - **发版说明三坑（0.3.5 修了三轮）**：① `Set-Content -Encoding utf8`（PS5.1）带 BOM——
   用 `[IO.File]::WriteAllText(…, [Text.UTF8Encoding]::new($false))`；② `Get-Content` 不带
   `-Encoding UTF8` 会按 GBK 解 UTF-8 全乱码；③ **一切 `#` 开头的行都会从 tag 注释里消失**——2026-09-23 v0.3.6
@@ -66,4 +84,4 @@
   路径搬回其原位（= 回滚到修复前）才安全，但没有必要。复验用
   `过程记录\2026-09-23-会话档案身份审计.js`（系统 node 跑，全绿 = 0 错位 0 冲突）。
 
-最近更新：2026-09-23 B机
+最近更新：2026-09-24 B机
