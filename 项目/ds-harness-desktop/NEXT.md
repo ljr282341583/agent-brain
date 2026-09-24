@@ -6,24 +6,20 @@
 
 ## 下一步
 
-1. **本机验证 [5]（可选，需显式放行）**：**管理员** PowerShell + 关桌面端 →
-   `cd app && npm run verify:smoke -- --force-installer`。核对六行都打印且 8/0/0：
-   「暂存卸载键/安装记忆键（真实安装 D:\…）」「安装前复查通过」「temp 实例注册于 …✓ 仅 HKCU
-   （每用户命名空间）」「真实安装体完好（D:\…）」「快捷方式…逐项复查在位」「卸载键回到基线」。
-   不加参数时本机会 SKIP——这是有意的安全默认值（发版门禁由 CI 承担）。
+1. **[5] 本机端到端已验证**（隔离命名构建，2026-09-24：通过 8、失败 0、跳过 0）。改安装器/
+   打包相关代码后重跑 = `npm run build:smoketest`（约 4 分钟）→ `npm run verify:smoke`
+   （**无需提权、无需 --force-installer**，本机有真实安装也安全）。未跑 build:smoketest 时
+   本机默认 SKIP（安全默认值），发版门禁由 CI 承担。
 2. 排查本机 Setup 双击崩溃：0xc0000005（NSIS `System.dll` @0x1581，2026-09-24 两次
-   同偏移；静默 `/S` 正常、交互路径必崩）。安全复现：**先暂存卸载键再启动**——切勿
-   直接双击未暂存状态下的安装器，会触发 uninstallOldVersion 卸掉真安装。
+   同偏移；静默 `/S` 正常、交互路径必崩）。**复现务必用隔离包**（先 `build:smoketest`，
+   双击 `产出\smoketest\…SmokeTest Setup …exe`）——不要裸双击真实包，那会触发
+   uninstallOldVersion 卸掉真安装。
 3. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
    与现实不符**（源在外部 `.agent-loop/project.md`，须在源头改）、补 `app/README.md`
    （代码注释引用它）、`过程记录/` 补 v0.3.1–v0.3.4 四篇。
 4. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体
    完好）；快照扩全机位置已随 09-24 修复完成，此项只剩断言本体。
-5. （可选，消除级）[5] 命名空间彻底隔离：为体检单独出一个**换 appId/productName 的测试
-   构建**（如 `-c.appId=com.dsh.desktop.smoketest`），其 lnk 名与注册表键名天生撞不上真实
-   安装——比 `/currentuser` 更彻底（后者只改"写哪儿"，前者改"叫什么"）。需先验证该构建
-   与发布链路互不影响。
-6. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
+5. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
 
 ## 已知坑
 
@@ -56,9 +52,11 @@
   （`...\Uninstall\99d3b161-…`、`Software\99d3b161-…`）都由**产品名/GUID 派生**，与安装
   目录无关；`assistedInstaller.nsh` L112-120 还表明**安装模式由"安装记忆键"决定**（HKLM 有
   → 全机 → 读写公共桌面/HKLM，且开装前的 `uninstallOldVersion` 会去读真安装的卸载键）。
-  对策：① [5] 在"本机存在真实安装"时**默认 SKIP**（`--force-installer` 才跑）；② temp 安装
-  强制 **`/currentuser`**（L129-133 支持）→ 只写 HKCU + 用户级快捷方式；③ 护栏（三 hive
-  暂存/独立复查/快照还原/判红）仍保留作纵深防御。**要彻底消除需换 appId 的测试构建。**
+  对策（2026-09-24 已全部落地）：① **`npm run build:smoketest`**——体检专用隔离命名构建
+  （productName/shortcutName/guid 三换），`verify:smoke` 读到清单即自动优先使用它，实测
+  8/0/0 且真实安装零接触（**首选**）；② 用真实安装包时：本机存在真实安装即**默认 SKIP**
+  （`--force-installer` 才跑）；③ temp 安装强制 **`/currentuser`**（L129-133 支持）→ 只写
+  HKCU + 用户级快捷方式；④ 护栏（三 hive 暂存/独立复查/快照还原/判红）作纵深防御保留。
 - **PowerShell 5.1 的 `ConvertTo-Json` 对单元素数组会退化成裸字符串**：`@('x') |
   ConvertTo-Json -Compress` → `"x"`（不是 `["x"]`）。2026-09-24 在体检硬闸里踩到，
   解析端误判"扫描失败"。**跨进程回传结果一律用哨兵行协议**（`KEY=` 行 + `SCAN-DONE
