@@ -148,3 +148,44 @@
 - **否决**：① 只靠暂存+还原护栏（安全前提是还原成功，留时间窗）；② 只靠 `/currentuser`
   （只改"写哪儿"，同名 lnk/键在每用户命名空间依然存在，仍有潜在重叠）；③ 放弃本机 [5]
   覆盖（隔离构建已能在本机安全跑，无需牺牲）。
+
+## 2026-09-25 应用内 dsh 更新回退 bug：1 行身份守卫 + 先热补丁已安装体
+
+- **决定**：`app/src/main.js` 的 `child.on('exit')` 内加 `if (dshChild !== child) return;`
+  （置于关日志 fd 之后、`dshChild = null` 之前）。除改仓库源码外，**同步对已安装体**
+  （`…\resources\app\src\main.js`；asar: false，可直接改）打同一补丁让修复当天生效，
+  随后发 v0.3.7 由正式产物覆盖。
+- **理由**：旧进程 exit 被误判为「覆盖版本启动失败」，覆盖版本从未被拉起过（四次同因）。
+  守卫置于 close fd 之后是为了不漏关日志 fd（Windows 上会挡住日志轮转）；`dshExitPromise`
+  用独立的 `child.once('exit')`，故提前 return 不会让「安装前等待子进程退出」挂起。
+  选热补丁而非只发版：发版链路长（打包 + CI），而用户当天正卡在这个 bug 上。
+- **否决**：① 改 `restarting` 布尔标志（多点置位易漏，身份比对是唯一不会漏的判据）；
+  ② 只发版不热补丁（要多等一轮发版才能用上 dsh 0.1.7）。
+
+## 2026-09-25 发布 v0.3.7：tag 注释避开 `#` 开头
+
+- **决定**：版本 0.3.6 → 0.3.7，本地 `npm run build` 验证（通过 7 / 失败 0 / 跳过 1）后提交
+  `bdf0bb8`、打 tag `v0.3.7` 交 CI 发布；发版说明的标题**一律用 `**粗体**`**，不用 `#`/`##`。
+- **理由**：CI 取 tag 注释作 Release 正文，而 `#` 开头的行会被 git 从注释里剥掉（0.3.5/0.3.6
+  踩过、标题全丢），`git tag -F` 也照剥。实测本轮 34 行进 / 34 行出，四节标题完整写回；
+  CI 全绿，正式 Release 四资产齐全、线上 `latest.yml` = `version: 0.3.7`。
+- **否决**：只在 Releases 页面手工贴说明（CI 会用 tag 注释覆盖，前几版说明就是这么丢的）。
+
+## 2026-09-25 插件升级不绕过 pnpm 供应链冷却期
+
+- **决定**：`dshmarket` / provider 只升到 pnpm 当前允许的版本（1.58.0 / 0.11.11），**不**把它们
+  写进 `pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude` 去抢装 1.65.1 / 0.11.14，等满 1 天再升。
+- **理由**：pnpm 11 默认 `minimumReleaseAge=1440`（1 天）是防投毒的供应链保护、属有意默认；
+  排除名单是逃生门，为"追最新"常开就把它变成常态。本轮也无必须立刻升的理由（0.1.7 的兼容
+  修复早在 0.11.9 就具备）。
+- **否决**：为追最新版把这两个包加进 `minimumReleaseAgeExclude`（把安全默认当障碍）。
+
+## 2026-09-25 权限预设 defaultPreset 取保守值 workspace-write
+
+- **决定**：`profiles\web\cordis.patch.yml` 的 `defaultPreset` 由 `auto` 改为 `workspace-write`
+  （三个 presets 原样保留，含自定义的 `read-only`）。
+- **理由**：0.1.7 里 `auto` 是 Auto 审阅集成保留的运行时身份，而构造函数即 `resolve`、
+  此时集成必然未挂载 → 必定 `unknown preset "auto"`、该条目激活失败；`auto` 也不允许出现在
+  用户 presets 表里。`workspace-write` 是有效值中较保守的一个，与会话初始态一致。
+- **否决**：① 删掉 `defaultPreset` 让引擎自动推断（推断值若落在 presets 表外会抛 `custom` 错）；
+  ② 默认 `danger-full-access`（security-relevant 的默认不该由 agent 擅自放宽）。

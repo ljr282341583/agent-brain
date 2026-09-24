@@ -2,7 +2,14 @@
 
 ## 进行中
 
-- 无
+- **无。**（本轮「应用内 dsh 更新激活后秒回退」已修复并随 **v0.3.7** 发布 —— 2026-09-25 01:20
+  CI 全绿：正式 Release 非 Draft、四资产齐全（Setup / blockmap / portable / latest.yml）、
+  正文取 tag 注释且四节标题完整写回、线上 `latest.yml` = `version: 0.3.7` 连字符名。
+  实机已先验证「重启服务」不再回退。提交 `bdf0bb8`，tag `v0.3.7`。
+  根因/证据见项目仓库 `过程记录\2026-09-24-应用内更新自动回退bug与手工激活0.1.7.md`；
+  本轮还顺带修掉 dsh 0.1.7 的插件不兼容与权限配置，见同日另一篇过程记录。
+  **当前 dsh = 0.1.7-rc.2**（手工激活）；`~/.dsh` 备份在 `.dsh.bak-20260924-230423`。
+  **本机壳仍是 0.3.6**，要走托盘「检查桌面端更新」升到 0.3.7。）
 
 ## 下一步
 
@@ -30,9 +37,35 @@
 4. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体
    完好）；快照扩全机位置已随 09-24 修复完成，此项只剩断言本体。
 5. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
+6. **本机壳升到 0.3.7**：托盘「检查桌面端更新」→ 安装（更新向导**保持默认全机模式**，
+   别切「仅当前用户」）。注意本机已对**已安装体**打过同一补丁（hot patch），装完会被正式产物覆盖，
+   属预期。
+7. **等 pnpm 冷却期过后补升插件**（1 天规则，见「已知坑」）：`dshmarket` 1.58.0 → 1.65.1、
+   `@mars-sea/dsh-commandcode-provider` 0.11.11 → 0.11.14（两者均 2026-09-24 发布）。
+   命令：`dsh plugin --profile web update dshmarket@latest`。
+8. 顺带评估 `overrideFallbackDone` 的重置时机是否也需绑定子进程实例（当前按「每次成功启动重置」）。
 
 ## 已知坑
 
+- **dsh 0.1.7 删了 `settingsScope` 服务 → 第三方插件 pending 卡死（2026-09-24 B机实锤）**：
+  0.1.7 把 `@deepseek-ai/dsh-settings` 的 `SettingsProvider` 换成 `SettingsForms`，并**移除**了浏览器侧
+  `settingsScope` 与 `installSection`。旧版 `@mars-sea/dsh-commandcode-provider`（早于 0.11.9）inject 它
+  → Cordis 永远等服务 → 条目永久 pending，报 `dsh: warning: 1 entry did not activate` /
+  `pending (waiting for service: settingsScope)`，页面打不开。**0.11.9（09-22）起作者做了双代适配**，
+  `dsh plugin --profile web update <pkg>@latest` 即解决。**dshmarket 1.58.0 的 `client.js` 里仍有
+  `ctx.inject(["settingsScope"], …)`，但那是惰性注入 → 不阻塞启动、只静默失效**。
+  **壳的两道保险都盖不住这一类**：冒烟验证用干净临时 `DSH_HOME`、不带第三方插件；自动回退只在
+  **子进程退出**时触发，而插件 pending 时进程活着、UI 也打得开。**升引擎前后都要 update 一遍插件。**
+- **pnpm 11 默认 `minimumReleaseAge = 1440`（1 天）**：供应链保护默认开启，**刚发布的版本装不上**。
+  故 `@latest` 常拿到"至少 1 天前"的版本（实证：provider 0.11.14 发布于 09-24 12:46，用户实际拿到
+  0.11.11；`pnpm outdated` 报 dshmarket 1.58.0 而非 1.65.1）。想立刻装某版本须写进
+  `profiles\web\pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude`（已有 3 条此类豁免）。
+  **排查"版本没升上去"先看这条，别急着怀疑镜像没同步。**
+- **`defaultPreset: auto` 在 0.1.7 必定报错（2026-09-24 已修）**：0.1.7 的 `PermissionPresetService`
+  构造函数里就 `resolve(defaultPreset)`，而 `auto` 只在 Auto 审阅集成 live 时才进入可选名单
+  （`autoAdmit !== undefined`）→ 必然 unknown preset；**且 `auto` 不能出现在用户 `presets` 表里**
+  （源码显式抛错）。已把 `profiles\web\cordis.patch.yml` 改为 `defaultPreset: workspace-write`
+  （原值备份 `.bak-dsh017fix-20260924-232831`）；想用 Auto 请到「插件管理 → 自动审阅」启用集成。
 - **更新向导模式页陷阱（0.3.5 实测踩过，更新曾漂到 Program Files）**：electron-updater
   更新不带 `/S`（弹完整向导），第一页「装给谁」默认由记忆键决定、目录页被
   `skipPageIfUpdated` 跳过；切错模式即漂移——全机模式默认 `$PROGRAMFILES64`。更深一层：
@@ -116,4 +149,4 @@
   路径搬回其原位（= 回滚到修复前）才安全，但没有必要。复验用
   `过程记录\2026-09-23-会话档案身份审计.js`（系统 node 跑，全绿 = 0 错位 0 冲突）。
 
-最近更新：2026-09-24 B机
+最近更新：2026-09-25 B机
