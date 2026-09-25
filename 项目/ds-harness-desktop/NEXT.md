@@ -6,7 +6,8 @@
   Release 非 Draft 四资产齐全、线上 `latest.yml` = 0.3.8），本轮新增**「手机访问」内置中继**
   （中继跑在主进程内、随 App 起停；托盘与窗口菜单入口 + 开关）。用户已自更新到 0.3.8 并真机确认可用。
   上一轮 v0.3.7（修复应用内「检查 dsh 更新」激活后秒回退）的完整流水见 `JOURNAL\2026-09-25-A机.md`。
-  工作区仅剩**用户自己未提交**的 `AGENTS.md` / `CLAUDE.md`。
+  工作区**干净**（`AGENTS.md` / `CLAUDE.md` 的 agent-loop 脱钩改动已提交为 `7ed73c1` 并推送）。
+  第三次收尾（20:06）只做体检与记录，无代码改动；体检受阻于环境，见「已知坑」第一条。
 
 ## 下一步
 
@@ -15,6 +16,8 @@
    环境问题 SKIP"的策略。改安装器/打包相关代码后重跑 = `npm run build:smoketest`（约 4 分钟）
    → `npm run verify:smoke`（**无需提权、无需 --force-installer**，本机有真实安装也安全）。
    未跑 build:smoketest 时本机默认 SKIP（安全默认值），发版门禁由 CI 承担。
+   **⚠️ 这两个命令在 agent 会话内跑必挂（侧车 node 写不了 %TEMP%），见「已知坑」第一条；
+   要本机绿灯请用普通终端。**
 2. **本机安装器 `.onInit` 插件相位间歇性不稳定（合并原「双击崩溃」条目，2026-09-24 实测）**：
    表现二选一——**秒崩 0xC0000005**（退出码 3221225477，1-2s，无 WER 事件）或**长时间挂起**
    （手动探测 >600s 未返回，进程挂着），此外也成功过（298s）。**要害证据**：崩溃留下的
@@ -76,6 +79,16 @@
 
 ## 已知坑
 
+- **⚠️ agent 会话内跑 `npm run build` / `build:dir` 必挂在 afterPack（2026-09-25 A机 实测定位）**：
+  `afterPack.js` 的 `resolveNpmRunner`（L85-96）**优先用仓库内的侧车 `app\runtime\node.exe`** 跑
+  `npm ci --omit=dev`，而**凡镜像位于会话工作区内的进程，写工作区外一律 EPERM**（实测：同一二进制
+  —SHA256 相同、签名有效、无 MOTW— 在 `%TEMP%` 与 `G:\ai\` 下全部正常，在仓库内两个不同目录下全部
+  EPERM）→ npm 报 `errno -4048` / `syscall mkdir %TEMP%\dsh-desktop-prod-deps\<key>\node_modules`，
+  且连 `%LOCALAPPDATA%\npm-cache\_logs` 都写不进去。**同一根因**也解释 `build:dir` 打包冒烟 [3]/[4]
+  报红（[3] `EPERM: mkdtemp`）——**都不是产物问题**。→ **本机打包/体检请在普通终端（非 agent 会话）
+  里跑**；agent 会话内以 CI 结果为准。反证：`%TEMP%\dsh-desktop-prod-deps\` 有 09-23 与 09-25 11:29
+  两份已盖章的生产依赖缓存、CI 的 tag `v0.3.8` 完整 build 全绿。详见 `JOURNAL\2026-09-25-A机.md`
+  第三次收尾。
 - **验证改动不用真装（2026-09-25 补）**：`npm run build:dir` 出的 `产出\win-unpacked\` 直接跑
   即可（冒烟 [4] 就是这么验"打包产物能否拉起"的），**只有验真机自动更新链路时才需要真装一次**。
   本机一次真装约 720 秒（见「下一步」第 2 条），发版密集期用这条能省掉大部分等待。
