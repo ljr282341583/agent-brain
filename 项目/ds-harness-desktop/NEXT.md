@@ -51,9 +51,9 @@
     免提权对照复现；② 查 Defender 实时防护状态（A机 是关闭的）；③ 查已知文件夹是否被
     OneDrive/网络重定向（`multiUser.nsh` 在 `.onInit` 调 `SHGetKnownFolderPath`）；
     ④ 复现时抓 `ns*.tmp` 内容 + 进程转储。详情见 `JOURNAL\2026-09-25-A机.md`。
-3. 低价值清账（可选）：AGENTS.md Project Commands 过时 **且硬约束 3「runtime 无 npm」
-   与现实不符**（源在外部 `.agent-loop/project.md`，须在源头改）、补 `app/README.md`
-   （代码注释引用它）、`过程记录/` 补 v0.3.1–v0.3.4 四篇。
+3. 低价值清账（可选）：**AGENTS.md 命令表 / 硬约束 3 已于 2026-09-25 修好**（随与 agent-loop
+   脱钩一并落地：规则源移入仓库内，命令表补全为实际脚本、硬约束 3 改为 `prepare-runtime.ps1` 口径；
+   `app/README.md` 也已存在）→ **只剩 `过程记录/` 补 v0.3.1–v0.3.4 四篇。**
 4. （可选）[5] 卸载断言加固：卸载后注册表卸载键消失才全绿（当前已断言文件移除 + 真安装体
    完好）；快照扩全机位置已随 09-24 修复完成，此项只剩断言本体。
 5. B机接力：`git pull` 后对 agent 说“先读大脑仓库里 ds-harness-desktop 的笔记再继续”。
@@ -73,6 +73,17 @@
    可锁 dsh 版本、无账号/实名门槛、有守卫 + `verify:smoke` 体检；官方缺口：无 Linux。
    **待核实**：是否共用 `~/.dsh`（共用则 session 单实例锁会互抢）、是否自带运行时、同机共存是否打架。
    详见 `JOURNAL\2026-09-25-A机.md` 追加节。**用户拍板前不要动项目定位与代码。**
+10. **⚠️ 项目工作区存在未提交、非本会话所做的改动（2026-09-25 12:2x A机 发现）**：
+   `app/src/main.js`（+18 行：require `./relay.js` / `./tailnet.js` / `./qr-png.js` + 手机中继状态变量
+   + `will-quit` 里 `void stopMobileAccess()`）、未跟踪文件 `app/src/pair-qr.html`、`qr-png.js`、
+   `relay.js`、`tailnet.js`、`app/src/vendor/`（`qrcode.mjs` + README）——内容是「手机访问中继 +
+   扫码配对」，对应 ds-harness-mobile 方向。
+   **实测缺陷（`grep` 确认）**：`main.js:158` 调用的 `stopMobileAccess()` **全仓无定义**
+   （`relay.js` 仅导出 `startMobileRelay`）→ 退出时 `will-quit` 必抛 ReferenceError。**这份工作尚未收口**，
+   接手时先确认它是否完整可跑，别当成已完成。
+   **提交纪律**：提交只 `git add` 自己改的文件，**不要 `git add -A`**，否则会把这份半成品一起提交。
+   **2026-09-25 用户确认**：这批改动是**用户本人在另一个项目里并行开发中**，agent **不要介入**
+   （不修 `stopMobileAccess`、不整理、不提交）；等用户那边搞完再统一收尾。
 
 ## 已知坑
 

@@ -19,11 +19,12 @@ Electron 外壳包裹官方 DeepSeek Harness（`@deepseek-ai/dsh`），由捆绑
 
 ## 关键文档
 
-- 仓库根 `AGENTS.md`：agent-loop 启动指引、架构快照、命令、8 条硬约束（先读它）。
-- `docs/`：设计方案 / 使用方法 / 分发说明；`过程记录/`：按次会话日志（最新 2026-09-10）。
+- 仓库根 `AGENTS.md`：**本项目唯一主指引**（工作方式 / 记忆与交接 / 验证与提交 / 架构快照 /
+  目录指引 / 项目命令 / 8 条硬约束），先读它；`CLAUDE.md` 只是指针。
+- `docs/`：设计方案 / 使用方法 / 分发说明 / 各版 release notes；`过程记录/`：按次会话日志（最新 2026-09-24）。
 - 远程仓库：https://github.com/ljr282341583/ds-harness-desktop
-- agent-loop 长期记忆根不在本仓库内（另一工作区的 `projects/dsh-desktop-updater/.agent-loop/`），
-  本项目跨机思路断点以**本大脑目录**为准。
+- **本项目不使用 `agent-loop`**（2026-09-25 起脱钩）：**无外部 `.agent-loop/` 记忆根**，规则由
+  仓库内 `AGENTS.md` 自持；本项目跨机思路断点以**本大脑目录**为准。
 
 ## 约定 / 硬约束（违反即回退）
 

@@ -189,3 +189,21 @@
   用户 presets 表里。`workspace-write` 是有效值中较保守的一个，与会话初始态一致。
 - **否决**：① 删掉 `defaultPreset` 让引擎自动推断（推断值若落在 presets 表外会抛 `custom` 错）；
   ② 默认 `danger-full-access`（security-relevant 的默认不该由 agent 擅自放宽）。
+
+## 2026-09-25 与 agent-loop 脱钩：项目规则改由 AGENTS.md 自持
+
+- **决定**：本项目**不再使用 `agent-loop`**——不加载 agent-loop skill、不设 Stage / Gate / artifact
+  流程件、**废弃外部记忆根**（另一工作区 `projects/dsh-desktop-updater/.agent-loop/`）。项目规则
+  全部改由仓库根 `AGENTS.md` 自持：工作方式 / 记忆与交接 / 验证与提交 / 架构快照 / 目录指引 /
+  项目命令 / 8 条硬约束；`CLAUDE.md` 只作指针。
+- **理由**：实际工作路径早已是「查证 → 改 → `npm run build` 体检 → 用户点头才提交」，仓库内从未
+  产出 Gate/artifact 类流程件（确认无 `.agent-loop/`、无 `requirements/`）；而规则源在仓库之外，
+  改一条约束要跨工作区改源再同步，已实际漂移——命令表过时（写「无自动化测试」）、硬约束 3 与现实
+  不符（`prepare-runtime.ps1` 会补 npm），本次一并修正。
+- **替代安排**：跨机记忆照旧本大脑目录（`CONTEXT.md` / `NEXT.md` / `DECISIONS.md` / `JOURNAL\`），
+  本机按次细节写仓库 `过程记录/`；收尾仍走 `session-handoff` skill；提交 / 推送 / tag / 发版仍需
+  用户明确授权。
+- **否决**：① 保留 agent-loop 但降级为可选（规则源仍在仓库外，漂移会复发）；② 只删 managed block
+  不补新规则（留下无规则状态）；③ 顺手删 `@deepseek-ai/dsh-agent-loop` 依赖（那是 dsh 官方插件包，
+  与工作流无关）。
+- **落地**：项目仓库 `AGENTS.md` 重写、`CLAUDE.md` 改指针。
