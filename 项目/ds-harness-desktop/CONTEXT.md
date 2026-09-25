@@ -6,7 +6,7 @@
 
 Electron 外壳包裹官方 DeepSeek Harness（`@deepseek-ai/dsh`），由捆绑的独立 Node 24
 侧车（`app/runtime/node.exe`）执行 `dsh web`，产出 NSIS 安装包 + portable 分发给用户。
-当前版本 **v0.3.4**。
+当前版本 **v0.3.7**（tag `v0.3.7`，提交 `bdf0bb8`，核实于 2026-09-25）。
 
 ## 当前阶段（2026-09-22）
 
@@ -34,3 +34,13 @@ Electron 外壳包裹官方 DeepSeek Harness（`@deepseek-ai/dsh`），由捆绑
 5. 便携版每次启动自解压到临时目录，无法原地自更新。
 6. 版本判断只认顶层 `@deepseek-ai/dsh` 的 dist-tags；依赖用精确版本（无 `^`）。
 7. 上游 RC 同版本号可能重发布，以 `dist.integrity` 判内容。
+
+## 外部环境（2026-09-25 A机 核实；定位是否调整**尚未拍板**）
+
+- **官方桌面端（Electron）已上线预览/偷跑态**：源码在官方仓库 `apps/desktop` + `apps/desktop-host`
+  （复用现有 Web UI 与 Agent/会话/插件逻辑，自带托盘/单实例/自动更新/强制更新策略）；Windows 包
+  `deepseek-harness-0.1.7-rc.1.20260924.1-win-x64.exe` 在 `download.deepseek.com/dsh-desk/bin/win-x64/`
+  实测存在、客户端内可自更新到 **0.1.7-rc.2**；**官网与 GitHub Release 尚无下载入口**（未官宣）。
+- 与本项目重叠：免命令行、内置 dsh、托盘 + 自动更新。本项目差异面：可退回内置 dsh 保底、可锁 dsh
+  精确版本、无账号/实名门槛、有打包守卫与 `verify:smoke` 体检；官方缺口：无 Linux 版。
+- 讨论稿与待核实项见 `JOURNAL\2026-09-25-A机.md` 追加节、`NEXT.md` 第 9 条。

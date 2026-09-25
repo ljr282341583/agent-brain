@@ -65,6 +65,14 @@
    `@mars-sea/dsh-commandcode-provider` 0.11.11 → 0.11.14（两者均 2026-09-24 发布）。
    命令：`dsh plugin --profile web update dshmarket@latest`。
 8. 顺带评估 `overrideFallbackDone` 的重置时机是否也需绑定子进程实例（当前按「每次成功启动重置」）。
+9. **官方桌面端已上线（预览/偷跑态）→ 本项目定位待用户拍板**（2026-09-25 A机 核实）：
+   官方仓库已有 `apps/desktop` + `apps/desktop-host`（Electron、复用 Web UI，自带托盘/单实例/
+   自动更新/强制更新策略），Windows 包 `deepseek-harness-0.1.7-rc.1.20260924.1-win-x64.exe` 在
+   `download.deepseek.com/dsh-desk/bin/win-x64/` **实测存在**、可自更新到 **0.1.7-rc.2**（= 本机
+   dsh 同代）；官网与 GitHub Release 尚未官宣（assets 为空）。我们的差异面：可退回内置 dsh、
+   可锁 dsh 版本、无账号/实名门槛、有守卫 + `verify:smoke` 体检；官方缺口：无 Linux。
+   **待核实**：是否共用 `~/.dsh`（共用则 session 单实例锁会互抢）、是否自带运行时、同机共存是否打架。
+   详见 `JOURNAL\2026-09-25-A机.md` 追加节。**用户拍板前不要动项目定位与代码。**
 
 ## 已知坑
 
