@@ -1,0 +1,6 @@
+# Obsidian 的「界面状态」是易变文件：开着 Obsidian 就会不停被改写，
+# 会让 git 永远显示 dirty、挡住收尾的 pull --rebase，并在多机之间产生无意义冲突。
+# 注意：只忽略界面状态；.obsidian\ 下的设置（app.json / appearance.json / core-plugins.json）仍然跟踪。
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache/
