@@ -1,7 +1,8 @@
-# CONTEXT — 小红书抖音去水印apk（轻取 / QingQu）
+# CONTEXT — qingqu-media-saver（轻取 / QingQu）
 
 > 新会话 / 另一台机器开工前必读。项目定位或阶段大变时更新本文件。
 > 建档：2026-09-27 B机
+> 曾用名：小红书抖音去水印apk（2026-09-27 方案 B 迁名为 qingqu-media-saver，使「DSH 文件夹名 = 代码仓库名 = 本笔记文件夹名」三者同名）
 
 ## 项目是什么
 
@@ -16,10 +17,12 @@
 
 - 代码仓库（**私有**）：https://github.com/ljr282341583/qingqu-media-saver
 - 包名 `com.qingqu.mediasaver`；版本 v2.2（versionCode 3）；minSdk 24 / compile+target 35
-- **当前主证路径（G 机/本机）**：`G:\ai\deepseek harness output\workspace\projects\小红书抖音去水印apk`
-- 另存在一份同内容副本：`D:\AI(CODEX)\ds harness output\AI工作空间\projects\小红书抖音去水印apk`（两者哈希曾一致，但**写入不互相同步**，改前先确认在改哪一份）
+- **当前主证路径（本机）**：`G:\ai\deepseek harness output\workspace\projects\qingqu-media-saver`（迁名前为 `…\projects\小红书抖音去水印apk`）
+- 另存在一份同内容副本：`D:\AI(CODEX)\ds harness output\AI工作空间\projects\小红书抖音去水印apk`（两者哈希曾一致，但**写入不互相同步**，改前先确认在改哪一份；该副本的迁名未处理）
 
-> ⚠️ 三方同名约定未满足：DSH 文件夹名（`小红书抖音去水印apk`）≠ 仓库名（`qingqu-media-saver`）。勿据此在本仓库再建第二个项目文件夹，先在 NEXT 里定的方案落地后再统一。
+> 三方同名（成文约定）：DSH 文件夹名 = 代码仓库名 = 本笔记文件夹名 = `qingqu-media-saver`。
+> 迁名脚本与备份在 `G:\ai\_qingqu-migrate\`：`migrate-project-name.ps1` / `rollback-project-name.ps1`。
+> **若你看到的 DSH 文件夹仍是 `小红书抖音去水印apk`，说明迁移脚本尚未执行**——先执行（见 NEXT 第 1 条）再继续。
 
 ## 怎么跑
 

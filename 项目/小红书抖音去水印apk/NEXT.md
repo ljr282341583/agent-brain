@@ -17,7 +17,19 @@
 
 ## 下一步（按顺序）
 
-1. **解决三方同名**（需用户拍板）：DSH 文件夹名 `小红书抖音去水印apk`、仓库名 `qingqu-media-saver`、大脑项目文件夹名 `小红书抖音去水印apk` 三者不一致，违反大脑仓库 README「三方同名」约定。两个方向：① 仓库改名为 `小红书抖音去水印apk`；② DSH 文件夹改名为 `qingqu-media-saver`（改文件夹名会影响 A/B 机路径与既有笔记，建议优先①）。
+1. **执行迁名（方案 B，2026-09-27 已定）**：DSH 文件夹 `小红书抖音去水印apk` → `qingqu-media-saver`，与仓库名、本笔记名对齐。脚本已备好并做了人工备份：
+
+   ```powershell
+   # 迁移（幂等；必须在“别的项目会话”或普通 PowerShell 窗口执行）
+   pwsh -NoProfile -File "G:\ai\_qingqu-migrate\migrate-project-name.ps1"
+   # 出问题就回滚
+   pwsh -NoProfile -File "G:\ai\_qingqu-migrate\rollback-project-name.ps1"
+   ```
+
+   - 已有备份：`G:\ai\_qingqu-migrate\backup-manual-20260927-110336\`（7 个会话文件 + `workspace.json`，共 4.96 MB）
+   - 脚本会自动备份、检查 DSH 是否在跑、改完校验 JSON；**不要在本项目会话里执行**（该文件夹就是本会话工作目录，改完本会话作废）
+   - 执行后：完全退出并重启 DSH → 打开 `qingqu-media-saver` → 确认旧会话都在且能打开
+   - 若 `workspace.json` 被应用回写（项目名又变旧），关掉应用再跑一次脚本
 2. **仓库工作副本归位**：当前 Git 工作副本是**另建的** `github-upload\`，违反「项目仓库一律用原来的项目文件夹、不另建克隆副本」约定。需把这套整理后的目录结构（根=纯本地版 / `versions\server\` / `releases\` / `docs\`）与"原文件夹"合并方案定下来再动。
 3. **让"克隆即可构建"成立**：仓库里只有 `capacitor.config.ts`，而 CLI 7.4.3 + Node 24 解析该 `.ts` 会失败（见已知坑），照 README 敲命令会卡住。建议把 `capacitor.config.json` 一并入库，或删除 `.ts`。
 4. **构建脚本去机器化**：`android\build-apk.cmd` 写死了本机 SDK 与 Gradle 8.9 缓存绝对路径；同时 `gradle\wrapper\gradle-wrapper.properties` 指向未缓存的 8.14.3。应在别的机器/用户上验证一次，或改成参数化。
@@ -43,3 +55,6 @@
 - **`data\` 目录含敏感物**：`test-cookies.txt`、抖音/小红书抓取页面与 state JSON、`qingqu.db`。（本笔记不复述内容。）**绝不入库**；`audit-output` 里的样本图/视频也不宜再分发。
 - **两份工作区副本**：D 盘与 G 盘各有一份同内容项目，**写入不互相同步**（已用标记文件验证），编辑前先确认目标副本；用户实际常用的是 G 盘那份（PS 提示符可作判据）。
 - **没有 git 远程推送能力时不要假装成功**：本次 `gh repo create` 成功但 `git push` 失败，是靠 API 才传上去的；下次遇到同类报错要区分"仓库已建"与"代码已传"。
+- **DSH 会话是按「项目路径」编码存放的**：`~\.dsh\sessions\<编码路径>\<会话 id>\session.jsonl.zstd`。编码规则：`\`→`-`、空格→`~0020`、非 ASCII 字符→`~`+4 位**大写** UTF-16 十六进制，整体前后各加 `--`（本项目旧名编码为 `--G-ai-deepseek~0020harness~0020output-workspace-projects-~5C0F~7EA2~4E66~6296~97F3~53BB~6C34~5370apk--`）。项目登记表在 `~\.dsh\storages\workspace.json`（`projectId → path/title/sessionIds`），会话缓存 `storages\session_projcache.json` 存 `identity.cwd`，桌面端 Local Storage（leveldb）**不存**裸路径。**改项目文件夹名 = 文件夹 + sessions 目录 + workspace.json 三处一起改**，缺一处会话就"消失"（文件还在，只是挂不上）。
+- **执行迁名时注意沙箱**：迁移脚本要写 `~\.dsh\...` 与 `G:\ai\agent-brain`，都在 DSH 项目工作区之外；若在另一个 DSH 会话里执行，可能被文件沙箱拦（workspace-write 策略），此时改用普通 PowerShell 窗口，或在该会话里就那一条命令申请放宽。
+- **迁名会让正在使用旧路径的会话当场失效**：Windows 也不允许重命名被当作工作目录的文件夹（实测该目录独占打开被拒）。所以脚本的前置检查会拒绝在目标文件夹内执行。
