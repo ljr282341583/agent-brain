@@ -2,6 +2,43 @@
 
 > 只追加，不改写历史（被后条取代时在旧条目末尾追加 ⚠️ 取代标注，属追加非改写）；"讨论中 / 待确认"的内容只进 JOURNAL，不进本文件。
 
+## 2026-09-28 抖音解析改用「HTTP 先试 + 隐藏 WebView 兜底」
+
+- **决定**：抖音解析不再只依赖匿名详情接口。流程固定为：桌面 UA/移动 UA 直连详情接口先试（快）→ 被 Argus 风控拦下（403）或拿不到数据 → 回落到隐藏 WebView（1×1、INVISIBLE、alpha=0，复用现有「解析中」遮罩，用户无感）加载 `www.douyin.com/{video|note}/{id}`，让页面自己生成 `UIFID`/`__ac_signature`，再注入钩子取数。**UA 顺序为桌面优先**，超时后换移动 UA，再不行才报错。
+- **理由**：2026-09-28 实测匿名 HTTP 已被彻底封死（16 种 UA/Referer 组合全 403 `Blocked by ArgusSecurityPlugin Uifid Not Found`；iesdouyin 分享页降级为 2492 字节 WAF 挑战页；老 `iteminfo` 接口返回空响应）。真浏览器环境验证可行：页面脚本能生成凭据，详情接口恢复 200/79KB，桌面页 `<source>` 给出干净直链（实测下载 200 / video/mp4 / 2,206,476 字节）。用户明确选择「保留现有接口先试，WebView 当兜底」。
+- **数据来源三处互补，必须合并**：①`_ROUTER_DATA...videoInfoRes.item_list[0]` → 图集图片；②`<video><source>` → 视频干净直链；③详情接口 `aweme_detail`（钩 `JSON.parse`/`fetch`/`XHR`/`Response.prototype.json`）。
+- **否决**：
+  - 只用爬虫 UA 走 SEO 页 ld+json（只有标题/封面，无媒体直链）；
+  - `/playwm/` → `/play/` 的地址猜测替换（实测 `/play/` 返回 200 但 **0 字节**，`/playwm/` 返回 404）；
+  - 继续在 iesdouyin `/share/` 页里找 `_ROUTER_DATA`（已降级为 WAF 挑战页）；
+  - 伪造 `UIFID` cookie（无效）；
+  - 把 WebView 做成可见页面或让用户手动过验证（用户选了"全程隐藏"）。
+
+## 2026-09-28 抖音动态照片（伴生视频）判定为「平台侧已下线」，不做逆向补救
+
+- **决定**：v2.3 起抖音动图**只保存静态图**，不再尝试取伴生 MP4；界面如实标注，不假装还能取。小红书实况图不受影响，逻辑保持不动。
+- **理由**：2026-09-28 实测移动页、桌面页、iesdouyin 分享页三种入口的 `_ROUTER_DATA` 图对象都只有 `uri/url_list/download_url_list/height/width`，**没有任何 `video` 节点**（`imagesWithVideo=0`）；v1.0/v2.2 曾能取到 7–9 段伴生视频，属平台主动移除。
+- **否决**：从图片 URL 猜 `~tplv-...` 的视频变体（无依据、必然失效）；为一个已下线的字段把 WebView 复杂度再抬一层。
+
+## 2026-09-28 抓 XHR 响应必须覆盖 `responseText` 访问器，不能只监听 `load` 事件
+
+- **决定**：在 WebView 里截取页面自己发出的接口响应时，一律**覆盖 `XMLHttpRequest.prototype.responseText` 的 getter**（并在 `open`/`send`/`readystatechange` 上补辅助触发点），不要只依赖 `addEventListener('load', ...)`。本项目在 `DouyinWebExtractor` 的 `EARLY_JS` 与 `TAP_JS` 里各做了一层。
+- **理由**：2026-09-28 真机实测，v2.3.1 报「网页取数抖音页面未返回作品数据」，而 CDP 抓包证明**详情接口其实成功返回了**（`status_code=0`、76,355 字节、含干净视频直链）。数据一直在页面里 —— 抖音用 **axios**，axios 是靠 **`onreadystatechange` + 读 `responseText`** 取响应的，只监听 `'load'` 事件永远抓不到。改成覆盖访问器后一次通过，用户真机确认可用。
+- **额外收益**：覆盖访问器与「谁在读、用什么方式读」无关，对 axios / 原生 XHR / 各种封装一律有效，比逐事件挂钩更稳。
+- **否决**：只监听 `'load'`；只钩 `JSON.parse`（响应可能被别的解析器消费）；只钩 `Response.prototype.text`（桌面页走的是 XHR 而非 fetch）。
+
+## 2026-09-28 验证抓取逻辑必须用真实响应 + 复刻页面真实读取方式
+
+- **决定**：验证注入脚本时，①先把接口的**真实响应体从浏览器抓下来存成 payload**；②在沙箱里**复刻页面真实的读取方式**（如 axios 的 `readystatechange`+`responseText`）；③**故意只保留待测的那一条通路**（例如不给任何 DOM 数据，只留 XHR 钩子）。禁止用手写的理想数据验证。
+- **理由**：v2.3 与 v2.3.1 的验证器都"3/3 通过"，但真机连续失败两次。根因是验证器喂的是我自己编的 DOM payload，只证明了代码逻辑自洽，**没有证明真实页面会长出那些数据结构**。换成真实 payload 后，一次就复现并定位了 `load` 事件那个 bug。
+- **否决**：用理想化 fixture 跑通即认为可用；把"探针没抓到"当成"页面上没有"（实测该判断错误：页面其实调了接口，只是当时被抖音的 403 拦了、改用 SSR 数据）。
+
+## 2026-09-28 抖音 `sourceQuality` 必须如实标注水印状态
+
+- **决定**：`douyinResult` 依据视频地址是否命中 `/playwm/` 打 `watermark` 标记：是则 `sourceQuality=watermark-fallback` 并提示「当前仅取到平台带标识的公开版本（画面内标识无法去除）」；否则 `public-best`。图集文件名按 URL 真实格式定扩展名（webp 不再被写成 `.jpg`）。
+- **理由**：v2.2 在图集/动图页会无条件写「已获取平台公开资源」，而抖音侧实际给的是 q75/q80 的 webp 压缩图；同时原代码把 webp 字节存成 `.jpg` 扩展名，属实际缺陷。宁可提示保守，也不让用户以为拿到了原图。
+- **否决**：沿用 v2.2 的无条件乐观文案。
+
 ## 2026-09-27 改 DSH 项目名必须「四处同改」（补上会话文件头部 cwd）
 
 - **决定**：以后改 DSH 项目名一律用 `G:\ai\_qingqu-migrate\migrate-project-name.ps1`（安全版 v2），它同步改四处：①项目文件夹名 ②`.dsh\sessions` 下的项目编码目录名 ③**每个会话文件头部里的 `cwd`** ④登记表 `storages\workspace.json` 的 path/title；改完自动做全量校验。

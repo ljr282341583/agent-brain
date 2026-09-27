@@ -12,11 +12,12 @@
 
 | 架构 | 位置 | 状态 |
 | --- | --- | --- |
-| **纯本地 Android 版** | DSH 项目文件夹内的 `版本开发\纯本地APK版\` | **当前主线**，v2.2。解析/下载/历史全在手机本地，不需要服务器 |
+| **纯本地 Android 版** | DSH 项目文件夹内的 `版本开发\纯本地APK版\` | **当前主线**，v2.3.2。解析/下载/历史全在手机本地，不需要服务器 |
 | 服务器版（React + Express + SQLite + yt-dlp） | `版本归档\服务器版-v1.0\`（DSH 文件夹根目录也仍是一份服务器版代码） | 归档，v1.0。理解解析思路的参考实现，不继续开发 |
 
 - 代码仓库（**私有**）：https://github.com/ljr282341583/qingqu-media-saver
-- 包名 `com.qingqu.mediasaver`；版本 v2.2（versionCode 3）；minSdk 24 / compile+target 35
+- ⚠️ **项目文件夹本身不是 git 仓库**（2026-09-28 全盘搜索确认）：唯一的 git 仓库在 `github-upload\.git`，内容停在 **v2.2**，与主线已脱节三个版本。仓库形态待用户拍板（见 NEXT 第 1 条）。
+- 包名 `com.qingqu.mediasaver`；版本 v2.3.2（versionCode 6）；minSdk 24 / compile+target 35
 - **当前主证路径（本机）**：`G:\ai\deepseek harness output\workspace\projects\qingqu-media-saver`（迁名前为 `…\projects\小红书抖音去水印apk`）
 - 另存在一份同内容副本：`D:\AI(CODEX)\ds harness output\AI工作空间\projects\小红书抖音去水印apk`（两者哈希曾一致，但**写入不互相同步**，改前先确认在改哪一份；该副本的迁名未处理）
 
@@ -55,16 +56,23 @@ npm run build ; npm start   # 由 Express 单端口同时提供 API 与 dist
 
 - 仓库 `README.md` — **权威**：功能、快速上手、支持的链接类型、构建步骤、常见构建问题、水印说明、版本历史。
 - `版本开发\纯本地APK版\版本说明.md` — 纯本地版功能与验证记录。
+- `版本开发\纯本地APK版\tools\抖音403排查结论.md` — **抖音 403 的根因、方案与能力边界（必读）**，含 21 个可复跑的探针脚本说明。
+- `版本开发\纯本地APK版\tools\verify-tap-js.mjs` — 注入脚本离线验证器（**改 `TAP_JS`/`EARLY_JS` 后必跑**，当前 3/3 通过）。用**真实抓取的接口响应** + 复刻 axios 的读取方式验证，禁止用手写 fixture。
 - `版本开发\纯本地APK版\audit-output\xhs\审计结论.md` — 小红书候选资源审计结论（水印问题的证据基础）。
 - `版本归档\服务器版-v1.0\版本说明.md` — 服务器版归档说明。
 - `版本开发\纯本地APK版\tools\` — 4 个验证脚本（解析冒烟、候选审计、样本下载、排序测试），依赖 `..\..\data\qingqu.db`；未入库。
 
 ## 技术要点（改动前必知）
 
-- **纯本地版没有后端**：前端 `src/api.ts` 通过 `registerPlugin('MediaParser')` 调 Android 原生插件；插件全在 `android\app\src\main\java\com\qingqu\mediasaver\MediaParserPlugin.java`（Java，非 Kotlin），暴露 `parse / save / readClipboard / getHistory / clearHistory / deleteHistory` 与 `downloadProgress` 事件。
-- **解析路径**：抖音走公开详情接口（需 crawler UA）+ 图文 SEO ld+json 兜底；小红书走公开 H5 页面的 `window.__INITIAL_STATE__` → `noteData.data.noteData`。短链手动跟随 3xx（≤6 跳），保留 `did/iid/u_code/mid/from_aid/ts` 分享参数。
-- **候选排序（v2.2 引入）**：图片按 `origin/WB_DFT/RAW > H5_DTL > urlDefault > urlPre`，含 `wm/watermark/crd_wm` 的降权到最后；视频在 h264/h265/av1/h266 中按分辨率→码率→体积择优，同样避开显式水印标记。结果页按 `sourceQuality` 显示来源状态。
-- **动态照片**：图片与配套 MP4 靠 `sourceIndex` 配对，前端按勾选的照片索引筛 `livePhotos`。
+- **纯本地版没有后端**：前端 `src/api.ts` 通过 `registerPlugin('MediaParser')` 调 Android 原生插件；插件全在 `android\app\src\main\java\com\qingqu\mediasaver\MediaParserPlugin.java`（Java，非 Kotlin），暴露 `parse / save / readClipboard / getHistory / clearHistory / deleteHistory` 与 `downloadProgress` 事件。**v2.3 起另有 `DouyinWebExtractor.java`**（隐藏 WebView 取数，见下条）。
+- **抖音解析（v2.3.2，重要）**：匿名 HTTP 打详情接口 `/aweme/v1/web/aweme/detail/` 会被字节 **Argus 安全网关**拦成 **403 `Blocked by ArgusSecurityPlugin Uifid Not Found`**。
+  现方案 =「**HTTP 接口先试 → 失败回落隐藏 WebView**」：WebView（**全屏 + alpha=0 + 触摸穿透**，不能用 1×1，否则播放器不懒加载）加载 `www.douyin.com/{video|note}/{id}`，让页面脚本自己生成 `UIFID`/`__ac_signature`，再注入钩子取数。**桌面 UA 优先**（桌面页详情接口响应与 `<source>` 里是干净直链 `douyinvod.com`；移动页只给 `/playwm/` 水印端点）。
+  ⚠️ **钩子的关键**：抖音用 **axios**，靠 `onreadystatechange` + 读 `responseText` 取响应，**只监听 `'load'` 事件抓不到**；必须覆盖 `XMLHttpRequest.prototype.responseText` 访问器（`EARLY_JS` 与 `TAP_JS` 各一层）。
+  数据来自三处互补：详情接口 `aweme_detail`（视频，含 13 组码率）、`_ROUTER_DATA...videoInfoRes.item_list[0]`（图集图片）、`<video><source>`（视频兜底）。完整证据与 21 个探针见 `版本开发\纯本地APK版\tools\抖音403排查结论.md`。
+- **解析路径（小红书，未变）**：走公开 H5 页面的 `window.__INITIAL_STATE__` → `noteData.data.noteData`，2026-09-28 复测**完全正常**。短链手动跟随 3xx（≤6 跳），保留 `did/iid/u_code/mid/from_aid/ts` 分享参数。
+- **候选排序（v2.2 引入）**：图片按 `origin/WB_DFT/RAW > H5_DTL > urlDefault > urlPre`，含 `wm/watermark/crd_wm` 的降权到最后；视频在 h264/h265/av1/h266 中按分辨率→码率→体积择优，同样避开显式水印标记。结果页按 `sourceQuality` 显示来源状态。**抖音侧 v2.3 起按「是否 `/playwm/`」如实标注**，不再假装干净。
+- **动态照片：抖音侧已不可得（2026-09-28 实测）**。`_ROUTER_DATA` 的图对象现在只有 `uri/url_list/download_url_list/height/width`，**没有 `video` 节点**（`imagesWithVideo=0`），移动页与 iesdouyin 分享页都一样 → 抖音动图只能保存静态图。小红书实况图的 `sourceIndex` 配对逻辑仍然有效。
+- **`/playwm/` → `/play/` 的替换是陷阱**：实测 `/play/` 返回 **HTTP 200 但 0 字节**，`/playwm/` 返回 404。不要做这个猜测替换。
 - **保存**：Android 10+ 走 MediaStore（`IS_PENDING` 转正，失败删半成品），落到相册「轻取」目录；Android 7–9 落到应用外部专属目录（不申请整盘权限）。
 - **历史记录**：本机 SharedPreferences 存最近 50 条 JSON，非 SQLite；服务器版才用 SQLite。
 - **工具链锁定**：Capacitor core/android **6.2.1**（7.x 要求 JDK 21，本机只有 JDK 17）；AGP 8.7.3 + Gradle 8.9；androidx 已回退到 activity 1.10.1 / core 1.16.0 以适配 JDK 17。
