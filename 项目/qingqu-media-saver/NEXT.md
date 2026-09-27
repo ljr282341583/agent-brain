@@ -15,23 +15,25 @@
 - **真机状态：抖音三类链接（视频/图文/动态照片）可用**（用户实测）。视频拿到的是**干净直链**（非 `/playwm/` 水印端点）。
 - **APK 与源码一致已证**：`apkanalyzer` 核对 versionName/versionCode；APK 内 `assets/public/assets/` 与 `dist/` 同名同大小；`DouyinWebExtractor` 在 dex 中。
 - 注入脚本逻辑：`tools/verify-tap-js.mjs` **3/3 通过**（用**真实抓取的详情接口响应** + 模拟 axios 的 `readystatechange`/`responseText` 读取方式）。
-- 项目文件夹**不是 git 仓库**；唯一仓库是 `github-upload\.git`（单提交 `73fb6ae` = **v2.2 代码，未同步 v2.3.2**）。
+- **仓库归位完成**：项目文件夹本身即 git 仓库（`G:\ai\deepseek harness output\workspace\projects\qingqu-media-saver`），remote 指向 `ljr282341583/qingqu-media-saver`，HEAD `64026e4`，282 个跟踪文件；历史保留原 `github-upload\` 的 v2.2 提交后叠加 v2.3.2。**`github-upload\` 已删除。**
+- **入库前已脱敏**：`tools\sanitize-for-repo.mjs` 清掉了探针脚本与 payload 里的真实分享 token（`xsec_token`/`share_sign`/`did`/`iid`/`u_code`/`mid`）与 CDN 签名参数（`x-signature`/`x-expires`/`lk3s`）共 400 余处；`data\`、`.env`、APK、node_modules 均已排除，已核验零敏感文件入库。
 - DSH 会话仓：`~\.dsh\sessions\--G-ai-…-projects-qingqu-media-saver--\`。
 
 ## 下一步（按顺序）
 
-1. **`github-upload\` 同步 v2.3.2 并决定仓库形态（需用户拍板，优先级最高）**：现在代码改在 `版本开发\纯本地APK版\`，而 git 仓库在另建的 `github-upload\`，**两者已脱节两版**（v2.3/2.3.1/2.3.2 都没进 git）。选项：①直接在项目文件夹 `git init` 并接管这个仓库（符合「项目仓库一律用原来的项目文件夹」约定）②继续沿用 `github-upload\` 同步。**动之前先问用户。**
-2. **`tools\` 探针脚本入库**：21 个探针 + `verify-tap-js.mjs` + payload JSON 目前被 `.gitignore` 排除，且写死 Chrome 路径与本机路径。它们是抖音改版后重新定位的唯一抓手，建议参数化后入库。
+1. **仓库结构收拢（需用户拍板）**：现在一个仓库里并存三份代码——根目录（服务器版残留）、`版本开发\纯本地APK版\`（主线）、`版本归档\服务器版-v1.0\`（归档）。原 `github-upload\` 曾把结构理成「根=纯本地版 / `versions\server\` / `releases\` / `docs\`」。**要不要把主线提到仓库根、把两份服务器版收进 `versions\` 或 `archive\`？** 这是一次大搬家，动之前先跟用户确认。
+2. **`.gitattributes` 疗效未验**：本次刚加（`* text=auto eol=lf`），需要下一台机器 pull 后确认 CRLF 警告是否消失、有无意外差异。
 3. **`_ROUTER_DATA` / 详情接口漂移的应对**：抖音改版即失效。改 `TAP_JS` 或 `EARLY_JS` 前**必跑 `tools/verify-tap-js.mjs`**；重新定位用 `webview-cdp-probe5/6/21.mjs`。
 4. **回归小红书**：本次只实测了抖音。小红书链路虽经探针确认正常，但**改版后的端到端回归没跑**（图集/视频/实况图三类）。
 5. **他机型 WebView 差异**：本次只在用户那一台机器验证。系统 WebView 版本过低或厂商魔改过的机型可能行为不同——这是 WebView 方案的固有风险。
 6. **迁名工具包纳入版本管理**：仍只存在于 `G:\ai\_qingqu-migrate\`（非 git 仓库，约 60KB）。
 7. **让"克隆即可构建"成立**：仓库里只有 `capacitor.config.ts`，CLI 7.4.3 + Node 24 解析该 `.ts` 会失败；应把 `capacitor.config.json` 一并入库或删掉 `.ts`。
 8. **构建脚本去机器化**：`android\build-apk.cmd` 写死本机 SDK 与 Gradle 8.9 缓存绝对路径；wrapper 指向未缓存的 8.14.3。
-9. **仓库工程惯例**：补 `LICENSE`、`.gitattributes`（`* text=auto eol=lf`）；补仓库描述与 Topics。
-10. **发布形态**：建 Release 与 tag `v2.3.2`，把 APK 作为 Release 附件（现在 5 个约 4MB 的 APK 直接躺在目录里）。
-11. **D 盘副本是否同步迁名（用户定）**：`D:\AI(CODEX)\...\projects\小红书抖音去水印apk` 未处理，且同样没有 git 仓库。
-12. **大脑仓库接力**：本条笔记推送后，A 机 pull 即可拿到「抖音 403 根因 + WebView 方案 + 两处钩子教训 + 能力边界」的完整认知。
+9. **补仓库惯例**：补 `LICENSE`（需用户选授权类型）、仓库描述与 Topics。
+10. **发布形态**：建 Release 与 tag `v2.3.2`，把 APK 作为 Release 附件——**目前 APK 没入库是刻意的**（避免仓库长期背着 4MB 二进制），要靠 Release 分发。
+11. **探针脚本去机器化**：21 个探针写死了 Chrome 路径与本机路径，换机器要改。
+12. **D 盘副本是否同步（用户定）**：`D:\AI(CODEX)\...\projects\小红书抖音去水印apk` 未处理，同样没有 git 仓库。
+13. **大脑仓库接力**：本条笔记推送后，A 机 pull 即可拿到「抖音 403 根因 + WebView 方案 + 两处钩子教训 + 仓库归位结果」的完整认知。
 
 ## 已知坑
 

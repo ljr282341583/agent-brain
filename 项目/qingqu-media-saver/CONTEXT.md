@@ -16,7 +16,8 @@
 | 服务器版（React + Express + SQLite + yt-dlp） | `版本归档\服务器版-v1.0\`（DSH 文件夹根目录也仍是一份服务器版代码） | 归档，v1.0。理解解析思路的参考实现，不继续开发 |
 
 - 代码仓库（**私有**）：https://github.com/ljr282341583/qingqu-media-saver
-- ⚠️ **项目文件夹本身不是 git 仓库**（2026-09-28 全盘搜索确认）：唯一的 git 仓库在 `github-upload\.git`，内容停在 **v2.2**，与主线已脱节三个版本。仓库形态待用户拍板（见 NEXT 第 1 条）。
+- **仓库已归位于项目文件夹**（2026-09-28）：`git init` 在项目文件夹本身，远程 origin 同上，历史保留了原 `github-upload\` 的 v2.2 提交（`73fb6ae`）再叠 v2.3.2。**`github-upload\` 工作副本已废除并删除**。当前 HEAD `64026e4`，282 个跟踪文件。
+  > 注意：仓库里**并存三份代码**——根目录（服务器版残留）、`版本开发\纯本地APK版\`（**主线**）、`版本归档\服务器版-v1.0\`。这是现状如实记录，不是理想结构；要不要收拢见 NEXT。
 - 包名 `com.qingqu.mediasaver`；版本 v2.3.2（versionCode 6）；minSdk 24 / compile+target 35
 - **当前主证路径（本机）**：`G:\ai\deepseek harness output\workspace\projects\qingqu-media-saver`（迁名前为 `…\projects\小红书抖音去水印apk`）
 - 另存在一份同内容副本：`D:\AI(CODEX)\ds harness output\AI工作空间\projects\小红书抖音去水印apk`（两者哈希曾一致，但**写入不互相同步**，改前先确认在改哪一份；该副本的迁名未处理）
