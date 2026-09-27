@@ -21,8 +21,10 @@
 - 另存在一份同内容副本：`D:\AI(CODEX)\ds harness output\AI工作空间\projects\小红书抖音去水印apk`（两者哈希曾一致，但**写入不互相同步**，改前先确认在改哪一份；该副本的迁名未处理）
 
 > 三方同名（成文约定）：DSH 文件夹名 = 代码仓库名 = 本笔记文件夹名 = `qingqu-media-saver`。
-> 迁名脚本与备份在 `G:\ai\_qingqu-migrate\`：`migrate-project-name.ps1` / `rollback-project-name.ps1`。
-> **若你看到的 DSH 文件夹仍是 `小红书抖音去水印apk`，说明迁移脚本尚未执行**——先执行（见 NEXT 第 1 条）再继续。
+> **迁名已于 2026-09-27 完成**，四处同步到位：项目文件夹 / `.dsh\sessions` 项目编码目录 / **每个会话文件头部 cwd** / `workspace.json`（缺第 3 处会导致应用启动即"项目全空"）。
+> 迁名工具包（安全版 v2）在 `G:\ai\_qingqu-migrate\`：`migrate-project-name.ps1` / `rollback-project-name.ps1` / `lib\session-tool.mjs` / `selftest\selftest.ps1` / `README-迁名安全版.md`。
+> **要动会话仓（再迁名 / 回滚 / 删会话目录）必须先完全退出 DSH**——安全版脚本会硬性拒绝在应用运行时执行。
+> 若你看到的 DSH 文件夹仍是 `小红书抖音去水印apk`，那是**D 盘那份未迁名的副本**（见下一段），不是 G 盘这份。
 
 ## 怎么跑
 
