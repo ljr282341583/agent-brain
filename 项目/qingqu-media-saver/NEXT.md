@@ -1,39 +1,39 @@
 # NEXT — qingqu-media-saver（轻取 / QingQu）
 
 > 断点唯一真相源。收尾必更新；过时事项挪进当篇 JOURNAL，不堆积也不删历史。
-> 最近更新：2026-09-28 B机（抖音 403 已修，v2.3.2 经用户真机确认可用）
+> 最近更新：2026-09-28 B机（抖音 403 已修并经真机确认；仓库已做到「克隆即可构建」）
 
 ## 进行中
 
 - **抖音 403 已修复并经真机确认**：用户反馈「这一版完美」。最终版本 **v2.3.2**。
-- 修复过程连出三版（v2.3 → v2.3.1 → v2.3.2），前两版真机失败的原因与教训见 `JOURNAL\2026-09-28-B机.md`。
-- **无进行中的编码任务。** 下一步都是收尾性/工程性事项。
+- **仓库已整理到「全新克隆可构建」并实证**（同日第二批工作）。
+- **无进行中的编码任务。** 下一步都是工程性/体验性事项。
 
 ### 当前确凿状态（2026-09-28 复核）
 
-- 最新 APK：`版本开发\纯本地APK版\轻取-v2.3.2-纯本地-debug.apk`，**4,204,334 字节**，versionCode 6 / versionName 2.3.2，SHA256 `0CFA859CA7FAA2F2411690CDAC08872A79E316FFDEE58C16EA068A1F162C292E`。
+- 最新 APK：`版本开发\纯本地APK版\轻取-v2.3.2-纯本地-debug.apk`，**4,204,334 字节**，versionCode 6 / versionName 2.3.2。
+  构建**对同一源码可复现**（本地重跑 SHA 不变）；`apkanalyzer` 核对版本号、`DouyinWebExtractor` 在 dex 中。
 - **真机状态：抖音三类链接（视频/图文/动态照片）可用**（用户实测）。视频拿到的是**干净直链**（非 `/playwm/` 水印端点）。
-- **APK 与源码一致已证**：`apkanalyzer` 核对 versionName/versionCode；APK 内 `assets/public/assets/` 与 `dist/` 同名同大小；`DouyinWebExtractor` 在 dex 中。
-- 注入脚本逻辑：`tools/verify-tap-js.mjs` **3/3 通过**（用**真实抓取的详情接口响应** + 模拟 axios 的 `readystatechange`/`responseText` 读取方式）。
-- **仓库归位完成**：项目文件夹本身即 git 仓库（`G:\ai\deepseek harness output\workspace\projects\qingqu-media-saver`），remote 指向 `ljr282341583/qingqu-media-saver`，HEAD `64026e4`，282 个跟踪文件；历史保留原 `github-upload\` 的 v2.2 提交后叠加 v2.3.2。**`github-upload\` 已删除。**
+- **全新克隆可构建已实证**：`git clone --depth 1` 到空目录 → `npm install --ignore-scripts` → `npm run android:sync` → `android\build-apk.cmd`，走通并产出 APK；与本地构建 **406 个打包条目大小全部一致**。
+- 注入脚本逻辑：`tools\verify-tap-js.mjs` **3/3 通过**（用**真实抓取的详情接口响应** + 模拟 axios 的 `readystatechange`/`responseText` 读取方式）。
+- **仓库归位完成**：项目文件夹本身即 git 仓库（`G:\ai\deepseek harness output\workspace\projects\qingqu-media-saver`），remote 指向 `ljr282341583/qingqu-media-saver`，HEAD `7fcab5c`；历史保留原 `github-upload\` 的 v2.2 提交后叠加后续提交。**`github-upload\` 已删除。**
 - **入库前已脱敏**：`tools\sanitize-for-repo.mjs` 清掉了探针脚本与 payload 里的真实分享 token（`xsec_token`/`share_sign`/`did`/`iid`/`u_code`/`mid`）与 CDN 签名参数（`x-signature`/`x-expires`/`lk3s`）共 400 余处；`data\`、`.env`、APK、node_modules 均已排除，已核验零敏感文件入库。
 - DSH 会话仓：`~\.dsh\sessions\--G-ai-…-projects-qingqu-media-saver--\`。
 
 ## 下一步（按顺序）
 
-1. **仓库结构收拢（需用户拍板）**：现在一个仓库里并存三份代码——根目录（服务器版残留）、`版本开发\纯本地APK版\`（主线）、`版本归档\服务器版-v1.0\`（归档）。原 `github-upload\` 曾把结构理成「根=纯本地版 / `versions\server\` / `releases\` / `docs\`」。**要不要把主线提到仓库根、把两份服务器版收进 `versions\` 或 `archive\`？** 这是一次大搬家，动之前先跟用户确认。
-2. **`.gitattributes` 疗效未验**：本次刚加（`* text=auto eol=lf`），需要下一台机器 pull 后确认 CRLF 警告是否消失、有无意外差异。
-3. **`_ROUTER_DATA` / 详情接口漂移的应对**：抖音改版即失效。改 `TAP_JS` 或 `EARLY_JS` 前**必跑 `tools/verify-tap-js.mjs`**；重新定位用 `webview-cdp-probe5/6/21.mjs`。
-4. **回归小红书**：本次只实测了抖音。小红书链路虽经探针确认正常，但**改版后的端到端回归没跑**（图集/视频/实况图三类）。
-5. **他机型 WebView 差异**：本次只在用户那一台机器验证。系统 WebView 版本过低或厂商魔改过的机型可能行为不同——这是 WebView 方案的固有风险。
-6. **迁名工具包纳入版本管理**：仍只存在于 `G:\ai\_qingqu-migrate\`（非 git 仓库，约 60KB）。
-7. **让"克隆即可构建"成立**：仓库里只有 `capacitor.config.ts`，CLI 7.4.3 + Node 24 解析该 `.ts` 会失败；应把 `capacitor.config.json` 一并入库或删掉 `.ts`。
-8. **构建脚本去机器化**：`android\build-apk.cmd` 写死本机 SDK 与 Gradle 8.9 缓存绝对路径；wrapper 指向未缓存的 8.14.3。
-9. **补仓库惯例**：补 `LICENSE`（需用户选授权类型）、仓库描述与 Topics。
-10. **发布形态**：建 Release 与 tag `v2.3.2`，把 APK 作为 Release 附件——**目前 APK 没入库是刻意的**（避免仓库长期背着 4MB 二进制），要靠 Release 分发。
-11. **探针脚本去机器化**：21 个探针写死了 Chrome 路径与本机路径，换机器要改。
-12. **D 盘副本是否同步（用户定）**：`D:\AI(CODEX)\...\projects\小红书抖音去水印apk` 未处理，同样没有 git 仓库。
-13. **大脑仓库接力**：本条笔记推送后，A 机 pull 即可拿到「抖音 403 根因 + WebView 方案 + 两处钩子教训 + 仓库归位结果」的完整认知。
+1. **把 `@capacitor/cli` 降到 6.x（需评估）**：现在 CLI 7.4.3 配 android/core 6.2.1 是**错配**，症状就是「CLI 生成的 gradle 写死 Java 21 vs 本机只有 JDK 17」。现在靠 `android\fix-java-version.mjs` 每次同步后打补丁绕过。彻底根治要么降 CLI 到 6.x，要么升 Capacitor（但升 7.x 要 JDK 21）。**这是本次新发现的依赖不一致。**
+2. **仓库结构收拢（需用户拍板）**：一个仓库里并存三份代码——根目录（服务器版残留）、`版本开发\纯本地APK版\`（主线）、`版本归档\服务器版-v1.0\`（归档）。根 README 已加了导航说明，但**没搬家**。原 `github-upload\` 曾理成「根=纯本地版 / `versions\server\` / `releases\` / `docs\`」。
+3. **回归小红书**：本次只实测了抖音。小红书链路经探针确认正常，但**改版后的端到端回归没跑**（图集/视频/实况图三类）。
+4. **他机型 WebView 差异**：只在用户那一台机器验证过。系统 WebView 版本过低或厂商魔改可能行为不同——WebView 方案的固有风险。
+5. **`_ROUTER_DATA` / 详情接口漂移的应对**：抖音改版即失效。改 `TAP_JS` / `EARLY_JS` 前**必跑 `tools\verify-tap-js.mjs`**；重新定位用 `webview-cdp-probe5/6/21.mjs`。
+6. **探针脚本去机器化**：`tools\` 下 21 个探针写死了 Chrome 路径与本机路径，换机器要改。
+7. **迁名工具包纳入版本管理**：仍只存在于 `G:\ai\_qingqu-migrate\`（非 git 仓库，约 60KB）。
+8. **补仓库惯例**：`LICENSE`（需用户选授权类型）、仓库描述与 Topics。
+9. **发布形态**：建 Release 与 tag `v2.3.2`，APK 作为 Release 附件——**APK 没入库是刻意的**（避免长期背 4MB 二进制）。
+10. **`版本归档\服务器版-v1.0\` 的文档未动**：本次只改了主线与根 README；归档目录的文档描述的确实是服务器版，不算错。
+11. **D 盘副本是否同步（用户定）**：`D:\AI(CODEX)\...\projects\小红书抖音去水印apk` 未处理，同样没有 git 仓库。
+12. **大脑仓库接力**：本条笔记推送后，A 机 pull 即可拿到「抖音 403 根因 + 两处钩子教训 + 构建陷阱 + 仓库归位结果」的完整认知。
 
 ## 已知坑
 
@@ -61,6 +61,19 @@
 - **"探针没抓到" ≠ "页面没有"**：v2.3.1 的探针没抓到详情响应，我据此判断"桌面页不调接口"，实际是**抖音自己加了 403 拦截、页面改从 SSR 初始数据取**，而页面其实调了。要抓全部网络请求 + 逐条取响应体才能下结论。
 
 ### 构建与环境
+
+- **⚠️ 构建（2026-09-28 新增，换机器/克隆必踩）**
+  - **`cap copy` 不能用于准备 Android 工程**：它只拷 Web 资源，**不生成 `android\capacitor-cordova-android-plugins\`**。该目录被 gitignore 排除（每次重建），却是 `app\build.gradle` 的依赖 → 全新克隆报 `Could not read script '...cordova.variables.gradle' as it does not exist`。**必须用 `cap sync`**（已写进 `android:sync`）。
+  - **CLI 7.x 会把 Java 版本生成为 21，而本项目必须 JDK 17**：`@capacitor/cli` 是 **7.4.3** 而 `@capacitor/android`/`core` 锁定 **6.2.1**（错配）。`cap sync` 重新生成的两个文件都写死 `JavaVersion.VERSION_21`：`android\app\capacitor.build.gradle`（注释明写"每次 capacitor update 重新生成"）与 `android\capacitor-cordova-android-plugins\build.gradle`（整个目录在 gitignore 内）。两者**都无法入库**，故新增 `android\fix-java-version.mjs` 挂进 `android:sync` 每次自动改成 17。症状是编译报「无效的源发行版：21」。
+    > 阴险之处：**本机工作副本之所以"能构建"，是因为文件早被人手改过、且增量编译复用了产物**；一旦全新克隆触发真正重编译就暴露。这也是"在我机器上是好的"的典型。
+  - **`.gitattributes` 的 `* text=auto eol=lf` 会把 `.cmd` 转成 LF，批处理会崩**：cmd.exe 读 LF 行尾的 .cmd 会把行拆错（实测报 `'DK"' 不是内部命令` 这种诡异错）。已加 `*.cmd text eol=crlf`。**仓库里再加批处理时注意。**
+  - **批处理里不要用 `%~dp0文件名` 拼路径**：项目路径含中文与空格时会被引号解析搞坏。先 `cd /d "%~dp0"`，之后用相对路径。
+  - **Gradle wrapper 缓存结构是 `dists\gradle-<ver>-bin\<hash>\gradle-<ver>\bin\gradle.bat`**（中间两层）。hash 目录名**每台机器不同**，不能写死（旧脚本写的 `90cnw93cvbtalezasaz0blq0a` 在本机无效，实际是 `78qddjpeqn5v6yec3xb8kv9ca`）。
+  - **`gradle-wrapper.properties` 指向的版本必须本机有缓存**：原指向 8.14.3（无缓存），联网下载会被证书链问题挡住 → 已改为 8.9 与缓存对齐。
+- **git 推送在本机需要绕过两个开关**：`git -c http.proxy= -c https.proxy= -c http.schannelCheckRevoke=false push`。原因：①全局 `http.proxy` 配的 `127.0.0.1:7897` 握手直接失败（八成是 SOCKS5 口被当 HTTP 代理用）②直连能通但卡 `CRYPT_E_NO_REVOCATION_CHECK`。
+- **Gradle wrapper 联网下载会被证书链问题挡住**（`PKIX path building failed`）：构建脚本因此优先复用已有缓存。
+
+### 2026-09-27 迁名相关（仍有效）
 
 - **改 DSH 项目名必须「四处同改」**（本文件旧版写的"三处"是错的，2026-09-27 实测被它坑惨）：①项目文件夹 ②`.dsh\sessions` 下的项目编码目录 ③**每个会话文件头部里的 `cwd`** ④`workspace.json`。缺第③处 → 应用启动抛 `corrupt session log` → 工作区服务起不来 → 界面项目/会话全空（**数据没丢，是服务没起来**）。已固化成安全版脚本并配 40 项断言自测。
 - **⚠️ 2026-09-27 修正上文**：旧版第 58 条曾断言"改项目文件夹名 = 文件夹 + sessions 目录 + workspace.json 三处一起改"——**该断言已被证明不完整**，以本条为准。

@@ -65,7 +65,8 @@ npm run build ; npm start   # 由 Express 单端口同时提供 API 与 dist
 
 ## 技术要点（改动前必知）
 
-- **纯本地版没有后端**：前端 `src/api.ts` 通过 `registerPlugin('MediaParser')` 调 Android 原生插件；插件全在 `android\app\src\main\java\com\qingqu\mediasaver\MediaParserPlugin.java`（Java，非 Kotlin），暴露 `parse / save / readClipboard / getHistory / clearHistory / deleteHistory` 与 `downloadProgress` 事件。**v2.3 起另有 `DouyinWebExtractor.java`**（隐藏 WebView 取数，见下条）。
+- **纯本地版没有后端**：前端 `src/api.ts` 通过 `registerPlugin('MediaParser')` 调 Android 原生插件；插件全在 `android\app\src\main\java\com\qingqu\mediasaver\MediaParserPlugin.java`（Java，非 Kotlin），暴露 `parse / save / readClipboard / getHistory / clearHistory / deleteHistory` 与 `downloadProgress` 事件。**v2.3.2 起另有 `DouyinWebExtractor.java`**（隐藏 WebView 取数，见下条）。
+- **构建（2026-09-28 已修好，但有两个绕不过的坑）**：构建四步见 `版本开发\纯本地APK版\README.md`。两个必须知道的陷阱：①准备 Android 工程**必须用 `cap sync` 而不是 `cap copy`**（`copy` 不生成被 gitignore 的 `capacitor-cordova-android-plugins\`，全新克隆必崩）②**`@capacitor/cli` 7.4.3 与 `@capacitor/android`/`core` 6.2.1 是版本错配**，CLI 会把两个 gradle 文件生成为 `JavaVersion.VERSION_21` 而本机只有 JDK 17，靠 `android\fix-java-version.mjs`（已挂进 `android:sync`）每次自动修正。**彻底根治要降 CLI 到 6.x。**
 - **抖音解析（v2.3.2，重要）**：匿名 HTTP 打详情接口 `/aweme/v1/web/aweme/detail/` 会被字节 **Argus 安全网关**拦成 **403 `Blocked by ArgusSecurityPlugin Uifid Not Found`**。
   现方案 =「**HTTP 接口先试 → 失败回落隐藏 WebView**」：WebView（**全屏 + alpha=0 + 触摸穿透**，不能用 1×1，否则播放器不懒加载）加载 `www.douyin.com/{video|note}/{id}`，让页面脚本自己生成 `UIFID`/`__ac_signature`，再注入钩子取数。**桌面 UA 优先**（桌面页详情接口响应与 `<source>` 里是干净直链 `douyinvod.com`；移动页只给 `/playwm/` 水印端点）。
   ⚠️ **钩子的关键**：抖音用 **axios**，靠 `onreadystatechange` + 读 `responseText` 取响应，**只监听 `'load'` 事件抓不到**；必须覆盖 `XMLHttpRequest.prototype.responseText` 访问器（`EARLY_JS` 与 `TAP_JS` 各一层）。
