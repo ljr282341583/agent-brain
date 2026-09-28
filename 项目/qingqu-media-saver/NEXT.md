@@ -1,39 +1,44 @@
 # NEXT — qingqu-media-saver（轻取 / QingQu）
 
 > 断点唯一真相源。收尾必更新；过时事项挪进当篇 JOURNAL，不堆积也不删历史。
-> 最近更新：2026-09-28 B机（抖音 403 已修并经真机确认；仓库已做到「克隆即可构建」）
+> 最近更新：2026-09-28 B机（抖音 403 已修并经真机确认；仓库已可克隆即构建；**v2.3.2 已正式发布**）
 
 ## 进行中
 
-- **抖音 403 已修复并经真机确认**：用户反馈「这一版完美」。最终版本 **v2.3.2**。
-- **仓库已整理到「全新克隆可构建」并实证**（同日第二批工作）。
-- **无进行中的编码任务。** 下一步都是工程性/体验性事项。
+- **抖音 403 已修复并经真机确认**：最终版本 **v2.3.2**。
+- **仓库已整理到「全新克隆可构建」并实证**。
+- **v2.3.2 已正式发布**：tag + GitHub Release + APK 附件，LICENSE 选 **MIT**。前两批的收尾工作全部完成。
+- **无进行中的编码任务。**
 
 ### 当前确凿状态（2026-09-28 复核）
 
-- 最新 APK：`版本开发\纯本地APK版\轻取-v2.3.2-纯本地-debug.apk`，**4,204,334 字节**，versionCode 6 / versionName 2.3.2。
+- **最新发布：v2.3.2** —— https://github.com/ljr282341583/qingqu-media-saver/releases/tag/v2.3.2
+  - 附件 `qingqu-v2.3.2-debug.apk`，4,204,334 字节，SHA256 `0CFA859CA7FAA2F2411690CDAC08872A79E316FFDEE58C16EA068A1F162C292E`
+  - **已实证可下载**：从 Release 拉下来校验哈希与本地构建产物一致
+  - 附件**用纯 ASCII 名**：中文名会被 `gh release upload` 转写成乱码（`轻取-v2.3.2-纯本地-debug.apk` → `-v2.3.2-.-debug.apk`，已踩过并改名重传）
+- 本地 APK：`版本开发\纯本地APK版\qingqu-v2.3.2-debug.apk`（与 Release 附件同名同哈希）。
   构建**对同一源码可复现**（本地重跑 SHA 不变）；`apkanalyzer` 核对版本号、`DouyinWebExtractor` 在 dex 中。
 - **真机状态：抖音三类链接（视频/图文/动态照片）可用**（用户实测）。视频拿到的是**干净直链**（非 `/playwm/` 水印端点）。
 - **全新克隆可构建已实证**：`git clone --depth 1` 到空目录 → `npm install --ignore-scripts` → `npm run android:sync` → `android\build-apk.cmd`，走通并产出 APK；与本地构建 **406 个打包条目大小全部一致**。
-- 注入脚本逻辑：`tools\verify-tap-js.mjs` **3/3 通过**（用**真实抓取的详情接口响应** + 模拟 axios 的 `readystatechange`/`responseText` 读取方式）。
-- **仓库归位完成**：项目文件夹本身即 git 仓库（`G:\ai\deepseek harness output\workspace\projects\qingqu-media-saver`），remote 指向 `ljr282341583/qingqu-media-saver`，HEAD `7fcab5c`；历史保留原 `github-upload\` 的 v2.2 提交后叠加后续提交。**`github-upload\` 已删除。**
-- **入库前已脱敏**：`tools\sanitize-for-repo.mjs` 清掉了探针脚本与 payload 里的真实分享 token（`xsec_token`/`share_sign`/`did`/`iid`/`u_code`/`mid`）与 CDN 签名参数（`x-signature`/`x-expires`/`lk3s`）共 400 余处；`data\`、`.env`、APK、node_modules 均已排除，已核验零敏感文件入库。
+- 注入脚本逻辑：`tools\verify-tap-js.mjs` **3/3 通过**（真实抓取的接口响应 + 模拟 axios 的读取方式）。
+- **仓库**：项目文件夹本身即 git 仓库，remote `ljr282341583/qingqu-media-saver`，HEAD `a84b57f`，tag `v2.3.2`，LICENSE = MIT。原 `github-upload\` 已废除删除。
+- **入库前已脱敏**：`tools\sanitize-for-repo.mjs` 清掉真实分享 token 与 CDN 签名参数 400 余处；`data\`、`.env`、APK、node_modules 均已排除并核验。
 - DSH 会话仓：`~\.dsh\sessions\--G-ai-…-projects-qingqu-media-saver--\`。
 
 ## 下一步（按顺序）
 
-1. **把 `@capacitor/cli` 降到 6.x（需评估）**：现在 CLI 7.4.3 配 android/core 6.2.1 是**错配**，症状就是「CLI 生成的 gradle 写死 Java 21 vs 本机只有 JDK 17」。现在靠 `android\fix-java-version.mjs` 每次同步后打补丁绕过。彻底根治要么降 CLI 到 6.x，要么升 Capacitor（但升 7.x 要 JDK 21）。**这是本次新发现的依赖不一致。**
-2. **仓库结构收拢（需用户拍板）**：一个仓库里并存三份代码——根目录（服务器版残留）、`版本开发\纯本地APK版\`（主线）、`版本归档\服务器版-v1.0\`（归档）。根 README 已加了导航说明，但**没搬家**。原 `github-upload\` 曾理成「根=纯本地版 / `versions\server\` / `releases\` / `docs\`」。
+1. **把 `@capacitor/cli` 降到 6.x（需评估，优先级最高）**：现在 CLI 7.4.3 配 android/core 6.2.1 是**错配**，症状就是「CLI 生成的 gradle 写死 Java 21 vs 本机只有 JDK 17」。现在靠 `android\fix-java-version.mjs` 每次同步后打补丁绕过。彻底根治要么降 CLI 到 6.x，要么升 Capacitor（但升 7.x 要 JDK 21）。
+2. **仓库结构收拢（需用户拍板）**：一个仓库里并存三份代码——根目录（服务器版残留）、`版本开发\纯本地APK版\`（主线）、`版本归档\服务器版-v1.0\`（归档）。根 README 已加导航，但**没搬家**。
 3. **回归小红书**：本次只实测了抖音。小红书链路经探针确认正常，但**改版后的端到端回归没跑**（图集/视频/实况图三类）。
 4. **他机型 WebView 差异**：只在用户那一台机器验证过。系统 WebView 版本过低或厂商魔改可能行为不同——WebView 方案的固有风险。
-5. **`_ROUTER_DATA` / 详情接口漂移的应对**：抖音改版即失效。改 `TAP_JS` / `EARLY_JS` 前**必跑 `tools\verify-tap-js.mjs`**；重新定位用 `webview-cdp-probe5/6/21.mjs`。
-6. **探针脚本去机器化**：`tools\` 下 21 个探针写死了 Chrome 路径与本机路径，换机器要改。
-7. **迁名工具包纳入版本管理**：仍只存在于 `G:\ai\_qingqu-migrate\`（非 git 仓库，约 60KB）。
-8. **补仓库惯例**：`LICENSE`（需用户选授权类型）、仓库描述与 Topics。
-9. **发布形态**：建 Release 与 tag `v2.3.2`，APK 作为 Release 附件——**APK 没入库是刻意的**（避免长期背 4MB 二进制）。
-10. **`版本归档\服务器版-v1.0\` 的文档未动**：本次只改了主线与根 README；归档目录的文档描述的确实是服务器版，不算错。
+5. **补历史版本的 Release（可选）**：v1.0/v2.0/v2.1/v2.2 的 APK 只在本地，未发布。若要补，注意同样用 ASCII 名。
+6. **`_ROUTER_DATA` / 详情接口漂移的应对**：抖音改版即失效。改 `TAP_JS` / `EARLY_JS` 前**必跑 `tools\verify-tap-js.mjs`**；重新定位用 `webview-cdp-probe5/6/21.mjs`。
+7. **探针脚本去机器化**：`tools\` 下 21 个探针写死了 Chrome 路径与本机路径，换机器要改。
+8. **迁名工具包纳入版本管理**：仍只存在于 `G:\ai\_qingqu-migrate\`（非 git 仓库，约 60KB）。
+9. **仓库描述与 Topics**：LICENSE 已补，仓库描述与 Topics 还没设。
+10. **`版本归档\服务器版-v1.0\` 的文档未动**：本次只改了主线与根 README；归档目录描述的确实是服务器版，不算错。
 11. **D 盘副本是否同步（用户定）**：`D:\AI(CODEX)\...\projects\小红书抖音去水印apk` 未处理，同样没有 git 仓库。
-12. **大脑仓库接力**：本条笔记推送后，A 机 pull 即可拿到「抖音 403 根因 + 两处钩子教训 + 构建陷阱 + 仓库归位结果」的完整认知。
+12. **大脑仓库接力**：本条笔记推送后，A 机 pull 即可拿到完整认知。
 
 ## 已知坑
 
