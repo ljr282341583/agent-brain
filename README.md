@@ -11,6 +11,7 @@ agent-brain\
 ├── README.md          本文件
 ├── machines.md        机器名登记(COMPUTERNAME → 代号)
 ├── inbox.md           随手想法、还没成项目的灵感
+├── 铺大脑指路条.ps1   换机器后跑一次:把「本项目笔记在哪」铺进各项目文件夹(本机文件,不入库)
 ├── skills\            session-handoff skill 分发副本(各机初始化用)
 └── 项目\              所有项目笔记统一住这里(一级目录保持清爽)
     └── <项目名>\      每个项目一个文件夹
@@ -30,6 +31,31 @@ agent-brain\
 - [教程1-日常开发流程.md](教程1-日常开发流程.md) —— 配置好的机器怎么日常用:A 机开新项目 → B 机接手,小白向
 - [教程2-新电脑从零配置.md](教程2-新电脑从零配置.md) —— 一台全新电脑加入这套系统(主力机方向),从装软件开始
 - [教程3-旧项目接入.md](教程3-旧项目接入.md) —— 已经写了一半的老项目怎么进这套系统:补课 → 首次收尾 → 建仓推送
+
+## 一键铺「大脑笔记指路条」(换机器必做一次)
+
+`AGENTS.local.md` 是**本机文件、不入 git**(`.local` 就是这个意思),所以它不会跟着 clone 过来。
+B 机 / 第三台机克隆完本仓库后,跑一次脚本把指路条补齐:
+
+```powershell
+pwsh -File .\铺大脑指路条.ps1 -WhatIf   # 先看会动哪些文件,不写
+pwsh -File .\铺大脑指路条.ps1           # 真铺
+```
+
+- 它在每个项目文件夹里写一个 `AGENTS.local.md`,内容是「本项目的大脑笔记在哪」。
+  效果:DSH 每次开会话就把这段自动摆到 agent 眼前(作为 Additional instructions 注入),
+  不用再手打「先读大脑仓库里本项目的笔记再继续」。
+- 它靠 DSH 自带的指令加载机制生效:会话工作目录里的 `AGENTS.md` / `AGENTS.local.md` 会被自动加载。
+  **不用改 DSH 配置、不用给项目加 `.git`**。
+- 路径自动定位,不写死盘符:大脑仓库根读 `%USERPROFILE%\.agent-brain`(没有则按总约定依次探测);
+  项目列表读 DSH 自己的登记表 `<DSH_HOME>\storages\workspace.json`,再补上磁盘上带 `.git` 的真项目
+  (例:`ds-harness-desktop` 从没进过登记表,但它是活跃仓库)。
+- 有笔记的项目 → 直接给出 CONTEXT/NEXT 的路径;还没建档的项目 → 写明「大脑仓库里还没有本项目的
+  文件夹,开工前先问用户要不要建档」。
+- 幂等:可重复跑,内容没变就报「未变」。带 `.git` 的项目会顺手把 `AGENTS.local.md` 加进
+  `.git/info/exclude`(**不是** `.gitignore`),所以项目仓库的工作区保持干净、不留 diff。
+- 例外项目(名字对不上、前身目录等)在脚本顶部的 `$Overrides` 表里维护。
+- 脚本存为 UTF-8 **带 BOM**:PowerShell 5.1 读「UTF-8 无 BOM」的中文会变乱码,别把它转存成无 BOM。
 
 ## 两台机器的日常
 
@@ -53,10 +79,11 @@ agent-brain\
 ## 新机器初始化清单(B 机 / 第三台机第一次看这里)
 
 1. clone 本仓库到**本机任意路径**(建议短而稳:`%USERPROFILE%\agent-brain` 或某盘 `\ai\agent-brain`)
-2. 懒人路径:DSH 新会话对 agent 说「读 `<clone路径>\README.md`,按『新机器初始化清单』把跨机接力配置好」→ 它自动完成三件事:
+2. 懒人路径:DSH 新会话对 agent 说「读 `<clone路径>\README.md`,按『新机器初始化清单』把跨机接力配置好」→ 它自动完成四件事:
    - 把本仓库 `skills\session-handoff\` 复制到 `%USERPROFILE%\.agents\skills\session-handoff\`
    - 把下方「全局约定」写入 `%USERPROFILE%\.dsh\AGENTS.md`
    - 把本机 clone 路径写入 `%USERPROFILE%\.agent-brain`
+   - 跑一次 `铺大脑指路条.ps1`,把「本项目笔记在哪」铺进各项目文件夹(见上一节)
 3. 重启会话,验证:问 agent 任一已有项目的断点(如"DSH双击协作 现在做到哪了"),能答出 = 通了
 4. 首次收尾时 agent 会询问本机代号并登记进 `machines.md`
 
