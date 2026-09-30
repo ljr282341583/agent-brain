@@ -226,3 +226,43 @@
 - 证据：`app/src/relay.js`、`app/src/tailnet.js`、`app/src/qr-png.js`、`app/src/pair-qr.html`、
   `app/src/main.js`；实现与验证细节见 `过程记录\2026-09-25-手机访问中继内置到桌面端.md`。
 
+## 2026-10-01 降级判定收窄：只有「从未加载过 UI 且仍在启动阶段」才算版本启动失败（v0.3.9）
+
+- **决定**：`app/src/main.js` 退出回调的判据改为
+  `const startupFailure = !reachedUi && (uptimeMs < 60_000 || !tokenWaitSettled);`；
+  运行中途崩溃**不改版本状态**，改为**同版本**限次退避重启（3 次 / 30 分钟滑动窗口；跑满 10 分钟且起过 UI
+  则清空预算），预算用尽只报错页。
+- **理由**：2026-09-30 事故里子进程是**运行 4.6 小时后**静默退出的（`code=1`、无堆栈、无系统事件），旧判据
+  把它当成「覆盖版本启动失败」，4ms 内永久降级到注定起不来的内置版本。判据必须只回答「这个版本能不能起来」，
+  而 `reachedUi` 是唯一不会说谎的信号；「时间窗 + token 等待未结束」用来兜住「启动很慢、期间退出」这类。
+- **否决**：① 保留旧判据、只加「运行时长 > N 秒就不回退」（N 取多少都是拍脑袋，且首次启动慢时照样误判）；
+  ② 干脆去掉自动回退（违反硬约束 1 的保底意图，真遇到坏版本时用户无路可走）。
+
+## 2026-10-01 回退前必须预检 profile：内置版本解析不了就不回退（v0.3.9）
+
+- **决定**：新增 `updater.checkProfileBundles({installRoot, profileDir})`，判据与上游 `dsh-app-boot` 的
+  `packageDirFromAnchor` **完全一致**（`createRequire(anchor).resolve.paths()` 父目录链 + 必须存在
+  `package.json`；锚点顺序 = 安装的 dsh 包 → profile 目录）。自动回退、`bootstrap` 的降级、托盘
+  「回到内置版本」三处都先过预检；解析不了时**不改 `state.json`**（改为原地重试 / 当场拒绝并说明缺哪些
+  bundle）。另加兜底：真回退后内置版也起不来 → 用 `fallbackFromVersion` 一次性把 `state.json` 恢复回覆盖版本。
+- **理由**：本机 profile 的 11 个 bundle 里有 **2 个**只在 dsh ≥ 0.1.7 存在
+  （`dsh-experimental-voice-input-bundle`、`-agent-team-profile`），内置 0.1.5-rc.1 永远解析不了 ——
+  在这台机器上「回退到内置版本」不是保底，而是把用户永久锁死。判据必须与上游同源，否则会假报缺失、
+  把本来能用的回退也拒掉。
+- **否决**：① 只查 `<installRoot>/node_modules` 与 `<profileDir>/node_modules` 两个目录（漏掉 Node 父目录链，
+  本机 `~/.dsh/profiles/node_modules` 是 junction，会假阴）；② 只 `existsSync(目录)`（空目录/半装目录假阳，
+  上游要求存在 `package.json`）；③ 把预检放到 dsh 侧执行（外壳必须在**不启动** dsh 的前提下判断）。
+
+## 2026-10-01 agent 会话内打包/体检口径：TEMP 重定向 + DSH_SMOKE_EXTRA_ARGS（取代「必须用普通终端」）
+
+- **决定**：agent 会话内跑打包/体检时，把 `TEMP` / `TMP` / `npm_config_cache` 指到仓库内（如 `.tmp-build`），
+  并在本机 A机 设 `DSH_SMOKE_EXTRA_ARGS='--no-sandbox'`；`app/test/smoke.test.js` 新增该环境变量，只作用于
+  体检自己拉起的隔离实例（隔离端口 / userData / DSH_HOME、不抢单实例锁），CI 不设。
+- **理由**：侧车 `node.exe` 在沙箱下写工作区外一律 EPERM（同机对照：系统 node / PowerShell 不受限）→
+  `afterPack` 的 `npm ci` 必挂；Electron 在 agent 会话里不加 `--no-sandbox` 秒退 `0x80000003`。两条都绕过
+  之后，本机第一次拿到 `verify:smoke --packaged` **通过 7 / 失败 0 / 跳过 1** 的**可信绿灯**，
+  不必再靠「报红不代表产物坏」的口头豁免。
+- **否决**：① 改 afterPack 的临时目录路径（让产品代码迁就执行环境）；② 永远接受体检 [4] 报红
+  （绿灯就失去意义）；③ 在 smoke 里无条件加 `--no-sandbox`（会削弱 CI 上真正的沙箱验证）。
+
+
