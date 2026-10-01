@@ -12,6 +12,7 @@
 - 工作区干净，`main` 与 `origin/main` 一致（`f40fbd0`）。上一轮 v0.3.8（内置「手机访问」）流水见
   `JOURNAL\2026-09-25-A机.md`。
 
+
 ## 下一步
 
 1. **用户侧**：装/更新到 **v0.3.9**（托盘「检查桌面端更新」或从 Releases 下载）。重启后可自查日志里出现
@@ -42,7 +43,25 @@
    见 `DECISIONS.md` 2026-10-01。
 10. **提交纪律照旧**：只 `git add` 自己改的文件，不要 `git add -A`。
 
+11. **【最优先，等用户重启】重启 Desktop 后核对插件修复（2026-10-01 B机，三步）**：
+    ① 设置 → **Command Code** 页面回来了（含 Accounts 卡）；② 设置 → 模型列表里有
+    `commandcode` 目录，并发一条该 provider 的消息试通；③ 多账号卡里有「QQ小号(Go)」
+    且额度用满会自动切号。全绿 = 本次事故关闭；任一失败 → `dsh-child.log` 找
+    `did not activate` / `pending (waiting for service` / `skipping profile bundle`。
+    不想重启就想先体检就跑：
+    `dsh --profile web --dump-config | Select-String 'skipping|incompatible|llm-commandcode'`。
+12. **（可选）清理与观察**：针对 0.11.11 的 `allow-version` 豁免已无用（只对精确版本生效、
+    该版本已不在），可留可清；同时观察 0.12.2 在 0.2.0-rc.2 上有无新病（尤其设置页、模型目录、
+    联网搜索复用同一 key 的那条链路）。引擎**每次**升版后先跑第 11 条的 dump 命令再排查。
+
 ## 已知坑
+
+- **`dsh plugin allow-version` 只对精确版本生效**（2026-10-01 B机）：救急豁免必须带 `--dsh-version <精确版>`，
+  不带或版本不匹配则静默无效；**正解是升到原生适配版**，豁免只作过渡。
+- **`settings.yaml` 迁移被拒的分节会静默丢失**（2026-10-01 B机）：`importLegacyDocument()` 只跑一次，
+  把 `~/.dsh\settings.yaml` 改名 `.imported` 后不再重试；被拒分节只留在改名文件里 → 表现为「某个配置凭空消失、零报错」。
+  核对法见 `--dump-config`；**别重建 settings.yaml**（会覆盖现存 `.imported` 原件）。
+  配套坑：用户层 id 定向覆盖**不要写 `name`** —— 会把 id 指向别的包，启动 `ERR_MODULE_NOT_FOUND`。
 
 - **⚠️ agent 会话内打包/体检（2026-10-01 口径更新，旧口径作废）**：`afterPack.js` 的 `resolveNpmRunner`
   优先用仓库内的侧车 `app\runtime\node.exe` 跑 `npm ci --omit=dev`，而**凡镜像位于会话工作区内的进程，
@@ -122,4 +141,4 @@
   复验用 `过程记录\2026-09-23-会话档案身份审计.js`（系统 node 跑，全绿 = 0 错位 0 冲突）。
 - **手机端配对**：cookie 30 天，地址变化（域名 ↔ IP / 端口变化）后需重扫一次；中继关掉只是连不上，配对不失效。
 
-最近更新：2026-10-01 A机
+最近更新：2026-10-01 A机（v0.3.9 发布）+ B机（插件升版与配置回写）

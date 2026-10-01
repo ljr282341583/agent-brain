@@ -19,6 +19,10 @@ Electron 外壳包裹官方 DeepSeek Harness（`@deepseek-ai/dsh`），由捆绑
   （TEMP 重定向 + `DSH_SMOKE_EXTRA_ARGS`），不必再切普通终端。
 - 运行环境：A机（`DESKTOP-4J1NIGL`），桌面端为**全机安装** `G:\ai\dsh desktop\DS Harness Desktop`；
   覆盖版本 dsh `0.1.7-rc.2`、内置 `0.1.5-rc.1`。
+- **2026-10-01 B机 补记**：本机 DSH 运行时已自动升到 **0.2.0-rc.2**（引擎每次升版都要复查第三方
+  插件是否被 peer 门禁静默跳过，见 NEXT「已知坑」两条）；桌面端版本已到 **v0.3.8**
+  （上面第 9 行的 v0.3.7 是 09-25 旧值）。日常排查入口：
+  `dsh --profile web --dump-config`（不启动服务看组合树与跳过原因）。
 
 ## 关键文档
 

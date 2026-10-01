@@ -180,6 +180,8 @@
   修复早在 0.11.9 就具备）。
 - **否决**：为追最新版把这两个包加进 `minimumReleaseAgeExclude`（把安全默认当障碍）。
 
+> ⚠️ 已被 2026-10-01「引擎升 0.2.0-rc.2：插件升级到原生适配版，豁免只作救急」**部分取代**（此处仅存历史）：本轮升版不是"追最新"，是引擎自动升到 0.2.0-rc.2 后旧插件被 peer 门禁拒载、必须升，pnpm 11.22 也自动把 `0.12.2` / `1.66.7` 追加进了 `minimumReleaseAgeExclude`。"不为追最新而开逃生门"的立场其余部分仍有效。
+
 ## 2026-09-25 权限预设 defaultPreset 取保守值 workspace-write
 
 - **决定**：`profiles\web\cordis.patch.yml` 的 `defaultPreset` 由 `auto` 改为 `workspace-write`
@@ -264,5 +266,34 @@
   不必再靠「报红不代表产物坏」的口头豁免。
 - **否决**：① 改 afterPack 的临时目录路径（让产品代码迁就执行环境）；② 永远接受体检 [4] 报红
   （绿灯就失去意义）；③ 在 smoke 里无条件加 `--no-sandbox`（会削弱 CI 上真正的沙箱验证）。
+
+## 2026-10-01 引擎升 0.2.0-rc.2：插件升级到原生适配版，`allow-version` 豁免只作救急
+
+- **决定**：`@mars-sea/dsh-commandcode-provider` **0.11.11 → 0.12.2**、`dshmarket`
+  **1.58.0 → 1.66.7**（`dsh plugin --profile web add <pkg>@<ver>`）；升级前先打的
+  `dsh plugin allow-version … --accept-risk` 豁免**只当过渡救急**，不作为长期方案。
+  判定是否装载一律用 `dsh --profile web --dump-config`（不启动服务）。
+- **理由**：DSH 于 2026-10-01 01:15 自动升到 **0.2.0-rc.2**，两个插件的 peer 不含 0.2.0
+  → profile 启动**静默整包跳过**（`dsh-child.log` 有 `skipping profile bundle`）；
+  0.11.x 是按 0.1.7 引擎写的，豁免通道自己就提示"可能崩溃或数据损坏"，长期依赖等于把风险
+  提示当常态。0.12.2 的 `engines.dsh` 恰为 `0.2.0-rc.2`（同日发布），是唯一与运行时一致的
+  组合；1.66.7 peer 已含 `^0.2.0-rc.1`，门禁直接放行。
+- **否决**：① 长期靠 `allow-version` 豁免跑 0.11.11；② 等作者自己升版（作者已发版，等待无收益）；
+  ③ 卸载/禁用插件了事（用户核心诉求就是用它）。
+
+## 2026-10-01 多账号配置写回 `cordis.patch.yml`：id 定向 config 覆盖，不写 `name`
+
+- **决定**：把 `llm-commandcode.accounts`（QQ小号轮换，key 走凭据库）从
+  `~/.dsh\settings.yaml.imported` 摘出，写成用户层 `- id: llm-commandcode` +
+  `config:`（连 `apiKeyEnv` 一起写全），追加在 `profiles\web\cordis.patch.yml` 末尾；
+  改前备份 `cordis.patch.yml.bak-ccfix-20261001`。
+- **理由**：0.1.7 起 `settings.yaml` 已被移除，启动时 `importLegacyDocument()` **只迁移一次**
+  且改名后再不重试，被拒分节只留在改名文件里——09-24 那次迁移时插件尚未安装，分节导入被拒，
+  于是多账号静默丢了一周（只有主号）。`cordis.patch.yml` 是现行配置落点（设置页也写它）。
+  `name` 一律不写：id 定向覆盖会继承 bundle 层那一行的 `name`，用户层若写了 `name` 就可能把
+  id 指向别的包 → 启动 `ERR_MODULE_NOT_FOUND`（该文件头注释已明确警告此坑）。
+- **否决**：① 重建 `settings.yaml` 再让引擎迁移一次（会覆盖现存的 `.imported` 原件，且分节
+  仍可能被拒，等于二次赌博）；② 只让用户在设置页手工加（不可复现、不进笔记、下次迁移又丢）；
+  ③ 在用户层新插一行带 `name` 的 `llm-commandcode` 条目（会覆盖 bundle 层，见上）。
 
 
