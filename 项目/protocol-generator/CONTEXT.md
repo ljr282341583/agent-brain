@@ -13,7 +13,7 @@
 
 | 方案 | 目录 | 授权方式 | 实际版本 |
 |------|------|----------|----------|
-| 方案一启动码 | `方案一启动码/` | 每次打开输启动密码(默认密码明文见 README,笔记不复述) | **v5.9.1(已发布最新)**;v5.9.2 已完成待发布(见 NEXT);v5.9/v5.8/v5.7 并存保留 |
+| 方案一启动码 | `方案一启动码/` | 每次打开输启动密码(默认密码明文见 README,笔记不复述) | **v5.10(最新,2026-10-03 发布)**;v5.9.2/v5.9.1/v5.9/v5.8/v5.7 并存保留 |
 | 方案二授权码 | `方案二授权码/` | 授权码 + 设备指纹绑定,Supabase 云端,管理员面板v2 远程撤销 | 文件名叫 v6.0,**内容实为 V6.3**(见 NEXT 已知坑) |
 | 密码授权版 | `密码授权版/` | 方案一变体 | 停在 v5.1,未跟进 v5.7~v5.9 功能 |
 
@@ -33,10 +33,12 @@
 
 ## 技术要点(改动前必知)
 
-- 单文件 HTML + Tailwind CDN + 原生 JS,一个文件含全部逻辑(最新版 300KB+)。
+- 单文件 HTML + Tailwind CDN + 原生 JS,一个文件含全部逻辑(最新版 v5.10 为 332KB / 4800+ 行)。
 - docx 导出为自研实现:原版 docx 模板 base64 内嵌 → 解 zip → 替换 `word/document.xml` 字段 → 重新打包;纯文本类则现场生成最小 OOXML 包。
+- **文书里的当事人串务必走共用函数**(`getPartyGroupsText` / `getPartyGroupsUnderlinedHtml` / `getApplicantParties` / `getRespondentParties` / `getCaseParties`):规则是"申请人组顿号、组间「与」、第三方不列入";直接 `parties.map().join('与')` 或 `find(...) || parties[0]` 会漏人、串第三方(2026-10-03 修过一次这种事故)。
+- **治安 docx 表格取值用 `setDocxRowCellText()` 按单元格填**,不要用 `exact + nth:0`(全局首个匹配,两人取值相同时会写串);`replaceDocxTexts` 已支持 `\n → <w:br/>`,多人分组换行依赖它。
 - **老内核兼容**:Chromium 80~102 有 DecompressionStream 但不支持 `deflate-raw`,导出链路靠页面内 `dsh-compat` 代码块(纯 JS puff 算法)兜底——动导出代码时不能删这块(v5.5.1 的教训)。
-- 无正式测试框架;历史上用「Node + vm 提取页面真实函数」做端到端验证,脚本散落在 A 机 DSH 工作区根目录(`verify-dsh-export.js`、`_test_certtype.js`、`_test_attendees.js`),**不在仓库里**(详见 NEXT 已知坑)。
+- 无正式测试框架;验证沿用「Node + vm 提取页面真实函数」,并可进一步在 Node 里跑真实内嵌 docx 模板 + 真实 zip/压缩,**生成 docx 后再解包校验**。脚本散落在 A 机 DSH 工作区根(`_test_v510.js`、`_test_v510_parties.js`、`_test_attendees.js` 等),**不在仓库里**(详见 NEXT 已知坑)。
 
 ## 约定
 
