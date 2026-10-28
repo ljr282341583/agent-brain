@@ -15,7 +15,7 @@
    ② 错误页三按钮（重启服务 / 回到 vX / 打开 profile 目录）。
 2. **内置 dsh 升到 `0.2.1-rc.4`**（`app/package.json` 精确版本 + `npm ci`）→ 「保底」重新有效；
    或反向：把「回到内置版本」入口降级，并把 `AGENTS.md` 硬约束 1 改成实话（内置仅最小可用）。
-3. **发 0.3.10**：升号 → tag（CI 自动打包发布）；tag 注释标题别用 `#`（会被剥行），用 `**粗体**`。
+3. **发 0.3.10**：✅ 已完成（2026-10-29，tag `v0.3.10`，CI run `40745597756` 全绿；Release 四资产：Setup 129.9 MB / portable 129.7 MB / blockmap / latest.yml，正文取 tag 注释）。本机装的还是 0.3.9，可用托盘「检查桌面端更新」升级。
 4. **插件升版**：`dshmarket 1.66.7 → 1.73.1`、`@mars-sea/dsh-commandcode-provider 0.12.1 → 0.15.5`；
    升前跑 `dsh --profile web --dump-config` 查 `skipping|incompatible`。
 5. **把「本地自研插件禁止在 `dependencies` 写 `@deepseek-ai/*` 核心包」写进 `AGENTS.md` 硬约束**
