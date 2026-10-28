@@ -55,3 +55,12 @@ Electron 外壳包裹官方 DeepSeek Harness（`@deepseek-ai/dsh`），由捆绑
 - 与本项目重叠：免命令行、内置 dsh、托盘 + 自动更新。本项目差异面：可退回内置 dsh 保底、可锁 dsh
   精确版本、无账号/实名门槛、有打包守卫与 `verify:smoke` 体检；官方缺口：无 Linux 版。
 - 讨论稿与待核实项见 `JOURNAL\2026-09-25-A机.md` 追加节、`NEXT.md` 第 9 条。
+
+## 状态更新（2026-10-29 A机）
+
+- 引擎本机已到 **0.2.1-rc.4**（应用内更新），内置仍是 0.1.5-rc.1（保底实际不可用，见 NEXT 下一步 2）。
+- 壳新增：升级前 profile 预检、一键「回到上一个版本」、单实例冲突提示、`npm run verify:profile`。
+- 产物目录改为 `dist`；旧 `产出` 整体改名 `历史产物`（3.2 GB，已 gitignore）。
+- 本机已把 0.3.9（含上述改进）装到 `G:\ai\dsh desktop` 并在跑。
+- **环境注意**：agent 会话的工作区是 Low integrity，产出的 exe 继承标签后无法直接运行；用仓库根
+  `unlock-artifacts.cmd` 解锁、`reset-dist.cmd` 在重新打包前清空 dist（AGENTS 硬约束 9）。

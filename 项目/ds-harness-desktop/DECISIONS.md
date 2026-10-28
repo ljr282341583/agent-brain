@@ -297,3 +297,33 @@
   ③ 在用户层新插一行带 `name` 的 `llm-commandcode` 条目（会覆盖 bundle 层，见上）。
 
 
+
+## 2026-10-29 项目定位：继续自研壳（窄维护），不切官方桌面端
+
+- **决定**：保留 DS Harness Desktop 作为日常唯一的桌面壳，但收缩维护面：只保「手机中继 + 引擎版本可控/可回退」两条差异化能力，不再追官方功能与安装器打磨。
+- **理由**：官方桌面端把引擎钉在 `--host 127.0.0.1 --port 0`（手机连不进）、强制更新、不能锁引擎版本；本项目是「一台机器一个实例 + 尾巴网中继 + 扫码配对」，手机连的就是电脑上正在跑的那个实例。官方 Web 端虽可 `--host <尾巴网IP>`，但那是另起一个实例，不是遥控同一个。
+- **否决**：① 整体切换到官方桌面端（手机访问刚需没人接）；② 只保留手机中继、壳其余全停（壳是唯一让同一实例同时服务桌面与手机的载体）。
+
+## 2026-10-29 升级引擎前必须用真实 profile 预检，不通过不激活
+
+- **决定**：`updater.updateToLatest` 在激活前新增 `profile-precheck` 阶段：用候选版本对真实 profile 跑 `dsh --profile web --dump-config`，命中 `disabling profile plugin row` / `startup failed` / `did not activate` / `incompatible with dsh` / `cannot resolve profile bundle` 即丢弃刚下载的版本、保持原版本；另提供 `npm run verify:profile` 供人工/发版前预检。
+- **理由**：2026-10-28 事故中，冒烟（干净 `DSH_HOME`、不带第三方插件）全绿，但真实 profile 因插件钉死旧核心包而启动失败。只组配置树不启动服务，5 秒即可暴露。
+- **否决**：① 只靠冒烟 + 打包体检（覆盖不到真实 profile）；② 预检失败也激活、让用户自己回退（把风险推给用户）。
+
+## 2026-10-29 提供「回到上一个版本」一键回退
+
+- **决定**：`updater.rollbackToPrevious` + 托盘菜单项 + 错误页按钮（错误页从 1 个按钮扩到 3 个：重启服务 / 回到 vX / 打开 profile 目录）。
+- **理由**：内置版本是 `0.1.5-rc.1`，加载不了 0.2.x 的 profile，「回到内置版本」在事故中帮不上忙；两个覆盖版本之间切换才是有效退路，且 `previousVersion` 本来就在维护。
+- **否决**：只保留「回到内置版本」（死路）。
+
+## 2026-10-29 产物目录 `产出` → `dist`；历史产物改名 `历史产物`
+
+- **决定**：`electron-builder.yml` 的 `directories.output` 改为 `../dist`；`smoke.test.js` / `build-smoketest.js` / 当前文档同步；旧目录整体改名 `历史产物\` 并加入 `.gitignore`。
+- **理由**：产物路径统一为英文名、与 `dist` 惯例一致；旧目录作为 3.2 GB 历史存档保留，不再参与构建。
+- **否决**：删除历史安装包（GitHub Releases 的早期版本不全，本地留档更稳）。
+
+## 2026-10-29 会话工作区 Low integrity → 产物必须解锁才能运行
+
+- **决定**：把这条写进 `AGENTS.md` 硬约束第 9 条；仓库根提供 `unlock-artifacts.cmd`（把 `dist` 重置为 Medium 完整性）与 `reset-dist.cmd`（重新打包前清空 dist）。
+- **理由**：agent 会话把仓库根标成 `Low Mandatory Level`，构建产物继承该标签 → Electron 起不来（`0x80000003`）、NSIS 报 `Error writing temporary file`。工作区外副本能用，是因为复制不带完整性标签。这也真正解释了此前「agent 会话里 Electron 要 --no-sandbox」的成因。
+- **否决**：把仓库根整体改成 Medium 完整性（会让 Low 进程的 agent 反过来写不了工作区，等于废掉整个会话）。
