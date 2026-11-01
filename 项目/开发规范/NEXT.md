@@ -4,7 +4,13 @@
 
 ## 进行中
 
-无。v1.0 已完成并推送,等待实战检验。
+无。v1.0 已完成并推送;安装侧已做到"小白可用"(一句话 / 双击),等待实战检验。
+
+**现在装法三条**(2026-11-01 起):
+1. 一句话:对 AI 说"把 https://github.com/ljr282341583/dev-workflow 装到这台电脑,装完自检并告诉我结果" → AI 读 `install/AGENT-INSTALL.md` 自己干完。
+2. 双击:从 [Releases](https://github.com/ljr282341583/dev-workflow/releases/latest) 下 `ui-first-dev-installer-v*.zip` → 解压 → 双击 `安装.cmd`。
+3. 命令行:`powershell -ExecutionPolicy Bypass -File .\install\install-machine.ps1`(默认 `-Target all`)。
+
 
 ## 下一步
 
@@ -25,3 +31,6 @@
 - 本机已铺三套(2026-11-01):`.agents\skills`+`.dsh\AGENTS.md`(DSH)、`.codex\skills`+`.codex\AGENTS.md`(Codex)、`.claude\skills`+`.claude\CLAUDE.md`(Claude)。注意本机 **`claude` 命令不在 PATH**,`~\.claude` 目录是既有的;真正装 Claude Code 后它默认读该 CLAUDE.md。
 - 脚本改过 `$home` 变量名踩坑(PS 里 `$HOME` 是只读自动变量,函数参数不能叫 `$home`),已改为 `$baseDir`。
 - **B机路径未实测**:历史笔记里 B机 项目路径都是 `G:\ai\deepseek harness output\workspace\projects\…`(同 A机),推断工作区根相同,但未在 B机 上验证;若不同,靠自动探测或 `-WorkspaceAgents` 兜底。
+- **gh release 上传中文文件名会被改名**:`gh release upload` 把 `UI优先开发流程-安装包-v1.0.0.zip` 改成了 `UI.-.-v1.0.0.zip`。对策:zip 资产名保持 ASCII(`ui-first-dev-installer-v*.zip`),zip 内部文件夹名可以中文。`gh release create --notes-file` 比 `--notes` 稳(长中文内联易被 PowerShell 参数解析截断)。
+- 仓库已**转公开**(2026-11-01),地址不变;公开前已 `git grep` 扫过密钥/token/私钥/内网 IP,零命中。大脑仓库仍私有。
+- 本机 `dist\` 里是打包产物,已 `.gitignore`;发新版时重新跑 `install\打包一键安装.ps1` 再 `gh release upload`。

@@ -57,3 +57,13 @@
 - **否决**:为每个工具重写一份不同措辞的规则——三份内容一旦漂移就会互相矛盾,统一用 `redline-template.md` + `workspace-agents-2.6.md` 两个来源生成。
 - **备注**:本机 `claude` 命令不在 PATH(未装 CLI 或未加路径),`~\.claude\CLAUDE.md` 已按约定铺好;真正用 Claude Code 时它默认读该文件。Cursor 等读项目根 `AGENTS.md` 的工具,靠规范仓库的说明即可,暂不单独适配。
 
+## 2026-11-01 安装方式简化 + 仓库转公开
+
+- **决定**:把安装做成三种,大白话优先——① **一句话让 AI 自己装**(读 `install/AGENT-INSTALL.md`);② **解压双击 `安装.cmd`**(离线分发包,由 `install/打包一键安装.ps1` 生成并挂到 GitHub Release);③ 命令行(保留给技术向)。同时把 `dev-workflow` **从私有转公开**。
+- **理由**:用户明确反馈"这个安装方法小白不一定会"。诊断出四个卡点(要懂 git / 要开 PowerShell / 红字报错 / 不知道成没成)。方案①②分别消掉"命令"与"git/登录";再给安装脚本加**人话自检报告**(✅/❌ 清单 + 一句"现在对 AI 说什么"),消掉"不知道成没成"。转公开是为了让一句话安装不必处理私有仓库认证、也让分发包能直接从 Release 下载。
+- **公开前的安全检查**:`git grep` 扫过 `ghp_/github_pat_/sk-/AKIA/PRIVATE KEY/password/token/内网 IP` 等模式,零命中;仓库内只有规范文档、模板、截图、脚本,没有密钥与个人数据。
+- **否决**:
+  - 让人自己 clone + 敲命令(就是这次要解决的痛点)。
+  - 保留中文 zip 资产名——`gh release` 上传会把它改写成 `UI.-.-v1.0.0.zip`,已改 ASCII 资产名,zip 内的中文文件夹名保留。
+- **备注**:转公开后仓库地址仍为 `https://github.com/ljr282341583/dev-workflow`;大脑仓库 `agent-brain` 仍是私有。
+
