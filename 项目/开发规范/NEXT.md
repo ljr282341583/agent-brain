@@ -4,12 +4,14 @@
 
 ## 进行中
 
-无。v1.0 已完成并推送;安装侧已做到"小白可用"(一句话 / 双击),等待实战检验。
+无。v1.0 **已发布**(GitHub Release `v1.0.0` + `ui-first-dev-installer-v1.0.0.zip`)且仓库**已转公开**;README 已改版为对外落地页。安装侧做到"小白可用",等待实战检验。
 
 **现在装法三条**(2026-11-01 起):
 1. 一句话:对 AI 说"把 https://github.com/ljr282341583/dev-workflow 装到这台电脑,装完自检并告诉我结果" → AI 读 `install/AGENT-INSTALL.md` 自己干完。
 2. 双击:从 [Releases](https://github.com/ljr282341583/dev-workflow/releases/latest) 下 `ui-first-dev-installer-v*.zip` → 解压 → 双击 `安装.cmd`。
 3. 命令行:`powershell -ExecutionPolicy Bypass -File .\install\install-machine.ps1`(默认 `-Target all`)。
+
+> 本机(A机)三套已装好并自检全 ✅;B机 未试装(见已知坑)。
 
 
 ## 下一步
@@ -18,6 +20,8 @@
 2. 若 P1 出稿太慢:把 `templates/prototype/index.html` 的屏做成"复制一屏只改 data-screen"的程度,减少手写量。
 3. 可选:对存量 APK 只做 P1 设计评审(候选:`计杯`、`货运计数`、`轻取`、`ds-harness-mobile`),不动代码,验证"改造"场景。
 4. 技能里引用的是规范目录**绝对路径**;若移动目录,需同步改 `SKILL.md`「权威文档」表(那里有"目录丢失时用内联精简模板"的兜底)。
+5. **发版流程**(改规范正文后):WORKFLOW.md 末尾补变更记录 → 同步 README「更新记录」→ `install\打包一键安装.ps1 -Version x.y.z` → `gh release create vX.Y.Z <zip> --notes-file ...`(资产名保持 ASCII)。
+6. 可选增强:README 里加一个 15 秒演示 GIF(原型切四态/点确认弹层),比截图更直观。
 
 ## 已知坑
 
