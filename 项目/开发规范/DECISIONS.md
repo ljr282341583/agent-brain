@@ -42,4 +42,11 @@
 - **否决**:
   - 把 `workspace` 根 `git init` 纳入版本管理——工作区含大量与本规范无关的资产,改动面过大、且不是用户诉求。
   - 让安装脚本同时改 `workspace/AGENTS.md`——该文件不属于本仓库,路径与内容因机器而异,改为提供现成片段(`install/workspace-agents-2.6.md`)手动贴,更可控。
+    > ⚠️ 已被 2026-11-01「工作区根改为自动探测」取代:脚本现已能改 `workspace/AGENTS.md`,但先探测工作区根、探测不到就只提示,片段仍作为兜底保留。
+
+## 2026-11-01 工作区根改为自动探测(不写死路径)
+
+- **决定**:`-WorkspaceAgents` 默认值由"空"改为 `auto`;探测顺序 = 当前目录向上 → 本仓库根向上 → DSH 登记表 `%DSH_HOME%\storages\workspace.json` 里登记的路径;判据为"目录下有 `AGENTS.md` 且(`skills\registry.md` 存在 或 `AGENTS.md` 含'工作区通用协作规范')";探测不到只打印提示并跳过,支持 `-WorkspaceAgents <目录|文件|none>` 覆盖。
+- **理由**:用户质疑原示例里写死的 `G:\ai\deepseek harness output\workspace\AGENTS.md` 在另一台电脑未必成立——这个路径只是 A机 当前工作区根,不是常量。写死会在 B机 上静默改错地方或报错。
+- **否决**:在文档里保留"把本机路径改成你的路径"的手工步骤——路径因机器而异,让人手填就是把易错点交给用户。
 

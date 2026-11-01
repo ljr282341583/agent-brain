@@ -20,5 +20,6 @@
 - 技能能否被自动加载,取决于模型是否读到 AGENTS.md 红线并主动调 `skill`;万一没触发,直接说"按开发规范来"即可强制。
 - 规范对"纯后端 / 脚本 / 数据处理"不设门禁,别把 P0–P5 套到无界面任务上(会把小事做重)。
 - 中文项目名 `开发规范` 对应的 GitHub 仓库用了 ASCII 名 `dev-workflow`(GitHub 地址/克隆更稳);大脑仓库目录仍叫 `开发规范`,两边不一致属已知。
-- **换机器装法**:`git clone` dev-workflow → 跑 `install\install-machine.ps1`(用 `powershell -ExecutionPolicy Bypass -File`,本机没有 `pwsh` 命令)。脚本装「技能 + `~/.dsh/AGENTS.md` 红线」;工作区那节用 `-WorkspaceAgents "<workspace>\AGENTS.md"` 一起插(已实测:判重、备份、插在 `## 3.` 之前),也可手动贴 `install\workspace-agents-2.6.md` 的 BEGIN/END 片段。
+- **换机器装法**:`git clone` dev-workflow → 跑 `install\install-machine.ps1`(用 `powershell -ExecutionPolicy Bypass -File`,本机没有 `pwsh` 命令)。脚本装「技能 + `~/.dsh/AGENTS.md` 红线 + 工作区 §2.6」;**工作区根自动探测**(当前目录向上 → 本仓库向上 → `storages\workspace.json` 登记路径),不写死盘符;探测不到只提示不瞎改,可 `-WorkspaceAgents <目录|AGENTS.md>` 显式指定或 `none` 跳过。实测四种情形(自动/显式目录/显式不存在/ none)均正确。
 - 安装脚本必须是 **UTF-8 带 BOM**,否则 Windows PowerShell 5.1 会把中文读成乱码并报语法错(踩过一次)。
+- **B机路径未实测**:历史笔记里 B机 项目路径都是 `G:\ai\deepseek harness output\workspace\projects\…`(同 A机),推断工作区根相同,但未在 B机 上验证;若不同,靠自动探测或 `-WorkspaceAgents` 兜底。
