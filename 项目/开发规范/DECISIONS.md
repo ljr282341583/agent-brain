@@ -50,3 +50,10 @@
 - **理由**:用户质疑原示例里写死的 `G:\ai\deepseek harness output\workspace\AGENTS.md` 在另一台电脑未必成立——这个路径只是 A机 当前工作区根,不是常量。写死会在 B机 上静默改错地方或报错。
 - **否决**:在文档里保留"把本机路径改成你的路径"的手工步骤——路径因机器而异,让人手填就是把易错点交给用户。
 
+## 2026-11-01 跨工具适配:DSH + Codex + Claude Code
+
+- **决定**:规范正文保持**工具无关**(纯 md/html);把"机制层"按工具各铺一份——DSH(`.agents\skills` + `.dsh\AGENTS.md` + 工作区 §2.6)、Codex(`.codex\skills` + `.codex\AGENTS.md`)、Claude Code(`.claude\skills` + `.claude\CLAUDE.md`);安装脚本加 `-Target dsh|codex|claude|all`(默认 all,未安装的工具自动跳过),本机三套已铺好。
+- **理由**:内容层本来就能被任何 agent 读,卡住的只是"谁会自动加载它"。用户实际装了 Codex(`~\.codex\AGENTS.md` 已有自定义规则)、Claude(`~\.claude` 已有 skills 目录),且既有习惯就是"AGENTS.md 为主指引、CLAUDE.md 作指针"(见 ds-harness-desktop),按同一模式适配成本最低、心智一致。
+- **否决**:为每个工具重写一份不同措辞的规则——三份内容一旦漂移就会互相矛盾,统一用 `redline-template.md` + `workspace-agents-2.6.md` 两个来源生成。
+- **备注**:本机 `claude` 命令不在 PATH(未装 CLI 或未加路径),`~\.claude\CLAUDE.md` 已按约定铺好;真正用 Claude Code 时它默认读该文件。Cursor 等读项目根 `AGENTS.md` 的工具,靠规范仓库的说明即可,暂不单独适配。
+
