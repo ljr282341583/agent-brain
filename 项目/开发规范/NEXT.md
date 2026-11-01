@@ -20,5 +20,5 @@
 - 技能能否被自动加载,取决于模型是否读到 AGENTS.md 红线并主动调 `skill`;万一没触发,直接说"按开发规范来"即可强制。
 - 规范对"纯后端 / 脚本 / 数据处理"不设门禁,别把 P0–P5 套到无界面任务上(会把小事做重)。
 - 中文项目名 `开发规范` 对应的 GitHub 仓库用了 ASCII 名 `dev-workflow`(GitHub 地址/克隆更稳);大脑仓库目录仍叫 `开发规范`,两边不一致属已知。
-- **换机器装法**:`git clone` dev-workflow → 跑 `install\install-machine.ps1`(用 `powershell -ExecutionPolicy Bypass -File`,本机没有 `pwsh` 命令)。脚本只装「技能 + `~/.dsh/AGENTS.md` 红线」;**`workspace/AGENTS.md` §2.6 不在 git 里,要手动贴** `install\workspace-agents-2.6.md`。
+- **换机器装法**:`git clone` dev-workflow → 跑 `install\install-machine.ps1`(用 `powershell -ExecutionPolicy Bypass -File`,本机没有 `pwsh` 命令)。脚本装「技能 + `~/.dsh/AGENTS.md` 红线」;工作区那节用 `-WorkspaceAgents "<workspace>\AGENTS.md"` 一起插(已实测:判重、备份、插在 `## 3.` 之前),也可手动贴 `install\workspace-agents-2.6.md` 的 BEGIN/END 片段。
 - 安装脚本必须是 **UTF-8 带 BOM**,否则 Windows PowerShell 5.1 会把中文读成乱码并报语法错(踩过一次)。
