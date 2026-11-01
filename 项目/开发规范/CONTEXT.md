@@ -6,13 +6,17 @@
 
 一场"流程事故"的产物:用户让 agent 开发 APK,agent 跳过 UI 设计直接写代码,成品界面丑。用户要求把整个工作空间的开发流程规范化。
 
-本项目不做业务功能,产出是**一份可被 agent 自动执行的规范** + 配套模板,以及**三处落地机制**(缺一处就落不了地):
+本项目不做业务功能,产出是**一份可被 agent 自动执行的规范** + 配套模板,以及**五处落地机制**(缺一处就落不了地):
 
 | 落地点 | 路径 | 作用 |
 | --- | --- | --- |
-| 主规范 | `G:\ai\deepseek harness output\workspace\projects\开发规范\` | 正文、清单、模板、可点击原型脚手架(人读 + agent 复制) |
+| 主规范 | `projects\开发规范\`(私有仓 `dev-workflow`) | 正文、清单、模板、可点击原型脚手架(人读 + agent 复制) |
 | 技能 | `C:\Users\Administrator\.agents\skills\ui-first-dev\SKILL.md` | 触发即加载,带每阶段动作与门禁话术 |
 | 全局红线 | `C:\Users\Administrator\.dsh\AGENTS.md`「开发流程红线」 | 每次会话自动注入,强制加载技能、禁止跳过设计 |
+| 工作区级红线 | `workspace\AGENTS.md` §2.6 + §7 完成标准勾选项 | 工作区自己的规则文件也指向本规范(workspace 根不是 git 仓库,换机器需手动同步片段) |
+| 跨机安装 | `projects\开发规范\install\install-machine.ps1` | 一条命令装好技能 + 全局红线;幂等;含 `redline-template.md` 与 `workspace-agents-2.6.md` 片段 |
+
+> 技能已在 `workspace\skills\registry.md` 登记(按工作区 Skills 管理规则)。
 
 ## 流程骨架(2026-11-01 定版 v1.0)
 
